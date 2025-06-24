@@ -1,6 +1,6 @@
 "use strict";
 
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
 import { CursorPaginationManager } from '../utils/pagination.js';
 
@@ -92,7 +92,7 @@ export async function execute(interaction) {
     if (!result.characterInfo || result.characterInfo.edges.length === 0) {
       return await interaction.editReply({ 
         content: `\`\`\`No character information found for '${characterName}'.\`\`\``,
-        ephemeral: true 
+        flags: [MessageFlags.Ephemeral] 
       });
     }
 
@@ -168,7 +168,7 @@ export async function execute(interaction) {
     const message = await interaction.editReply({ 
       content: messageContent,
       components: [navigationRow],
-      ephemeral: true 
+      flags: [MessageFlags.Ephemeral] 
     });
 
     // Store pagination manager for button interactions
@@ -180,7 +180,7 @@ export async function execute(interaction) {
 
     collector.on('collect', async (i) => {
       if (i.user.id !== interaction.user.id) {
-        await i.reply({ content: 'This pagination is not for you!', ephemeral: true });
+        await i.reply({ content: 'This pagination is not for you!', flags: [MessageFlags.Ephemeral] });
         return;
       }
 
@@ -205,7 +205,7 @@ export async function execute(interaction) {
           components: [newNavigationRow] 
         });
       } else {
-        await i.reply({ content: 'No more pages available!', ephemeral: true });
+        await i.reply({ content: 'No more pages available!', flags: [MessageFlags.Ephemeral] });
       }
     });
 
@@ -218,7 +218,7 @@ export async function execute(interaction) {
     
     await interaction.editReply({ 
       content: `\`\`\`Error: Failed to fetch character information for '${characterName}'. Please try again.\`\`\``,
-      ephemeral: true 
+      flags: [MessageFlags.Ephemeral] 
     });
   }
 } 

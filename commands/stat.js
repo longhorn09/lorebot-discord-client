@@ -1,8 +1,9 @@
 "use strict";
 
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
 import { CursorPaginationManager } from '../utils/pagination.js';
+import moment from 'moment';
 
 export const data = new SlashCommandBuilder()
   .setName('stat')
@@ -10,12 +11,12 @@ export const data = new SlashCommandBuilder()
   .addStringOption(option =>
     option.setName('item')
       .setDescription('Search term for lore items (optional)')
-      .setRequired(false))
+      .setRequired(true))
   .addIntegerOption(option =>
     option.setName('limit')
       .setDescription('Number of items to show per page (default: 3)')
       .setMinValue(1)
-      .setMaxValue(10));
+      .setMaxValue(5));
 
 export async function execute(interaction) {
   await interaction.deferReply();
@@ -79,6 +80,51 @@ export async function execute(interaction) {
       after: null,
     };
 
+    /**
+     * copied directly from original version of lorebot.js 
+     * at https://github.com/longhorn09/lorebot/blob/master/lorebot.js
+     * @param {*} pArg 
+     * @returns 
+     */
+    const formatAffects = (pArg) => {
+      let retvalue = "";
+      let affectsArr = [];
+      let sb = "";
+      //let affectBy = /([A-Za-z_\s]+)\s*by\s*([-+]?\d+)/;
+      let affectBy = /^([A-Za-z_\s]+)\s*by\s*(.+)$/;
+      let match = null;
+    
+      affectsArr = pArg.trim().split(",");
+      for (let i = 0;i<affectsArr.length;i++){
+        if (affectBy.test(affectsArr[i].toString().trim()) )
+        {
+          match = affectBy.exec(affectsArr[i].toString().trim());
+          //console.log("matched: " + affectsArr[i]);
+          //console.log(match[1].toUpperCase().padEnd(14) + "by " + match[2]);
+          if (match[1].trim() === "casting level" ||
+              match[1].trim() === "spell slots" ) //keep these lower case
+          {
+              sb += "Affects".padEnd(9) + ": " + match[1].trim().padEnd(14) + "by " + match[2] + "\n";
+          }
+          else if (match[1].trim().toLowerCase().startsWith("skill ")) {  // lore formatting for skills
+              sb += "Affects".padEnd(9) + ": " + match[1].trim().toLowerCase().padEnd(20) + "by " + match[2] + "\n";
+          }
+          else if (match[1].trim().length >= 13) {
+            sb += "Affects".padEnd(9) + ": " + match[1].trim().toLowerCase() + " by  " + match[2] + "\n"; // note: 2 trailing spaces after by
+          }
+          else {
+            sb += "Affects".padEnd(9) + ": " + match[1].trim().toUpperCase().padEnd(14) + "by " + match[2] + "\n";
+          }
+        }
+        else {
+          //console.log("didn't match: " + affectsArr[i]);       //this is going to be single lines like : regeneration 14%
+          sb += "Affects".padEnd(9) + ": " + affectsArr[i].toString().trim() + "\n";
+        }
+      }
+      retvalue = sb;
+      return retvalue;
+    }
+
     // Debug logging
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== STAT COMMAND DEBUG ===');
@@ -93,7 +139,7 @@ export async function execute(interaction) {
     if (!result.allLorePaginated || result.allLorePaginated.edges.length === 0) {
       return await interaction.editReply({ 
         content: `\`\`\`No lore items found${searchTerm ? ` matching '${searchTerm}'` : ''}.\`\`\``,
-        ephemeral: true 
+        flags: [MessageFlags.Ephemeral]
       });
     }
 
@@ -128,19 +174,28 @@ export async function execute(interaction) {
     paginationManager.formatPageContent = (pageItems) => {
       return pageItems.map((item, index) => {
         const itemNumber = index + 1;
-        let details = `**${itemNumber}. ${item.OBJECT_NAME}**\n`;
+        let details = `Object '${item.OBJECT_NAME}'\n`;
         
-        if (item.ITEM_TYPE) details += `Type: ${item.ITEM_TYPE}\n`;
-        if (item.ITEM_IS) details += `Item: ${item.ITEM_IS}\n`;
-        if (item.CLASS) details += `Class: ${item.CLASS}\n`;
-        if (item.MATERIAL) details += `Material: ${item.MATERIAL}\n`;
-        if (item.ITEM_LEVEL) details += `Level: ${item.ITEM_LEVEL}\n`;
-        if (item.ITEM_VALUE) details += `Value: ${item.ITEM_VALUE}\n`;
-        if (item.WEIGHT) details += `Weight: ${item.WEIGHT}\n`;
-        if (item.AFFECTS) details += `Affects: ${item.AFFECTS}\n`;
-        if (item.EFFECTS) details += `Effects: ${item.EFFECTS}\n`;
-        if (item.SUBMITTER) details += `Submitted by: ${item.SUBMITTER}\n`;
-        if (item.CREATE_DATE) details += `Created: ${new Date(item.CREATE_DATE).toLocaleDateString()}\n`;
+        if (item.ITEM_TYPE)                   details +=   `Item Type: ${item.ITEM_TYPE}\n`;
+        if (item.MAT_CLASS && item.MATERIAL) details +=    `Mat Class: ${(item.MAT_CLASS).padEnd(13)}Material : ${item.MATERIAL}\n`;
+        if (item.WEIGHT && item.ITEM_VALUE) details    +=  `Weight   : ${(item.WEIGHT.toString()).padEnd(13)}Value    : ${item.ITEM_VALUE}\n`;
+        if (item.AFFECTS) details +=                       `${formatAffects(item.AFFECTS)}`;
+        if (item.SPEED) details +=                         `Speed    : ${item.SPEED}\n`;
+        if (item.POWER) details +=                         `Power    : ${item.POWER}\n`;
+        if (item.ACCURACY) details +=                      `Accuracy : ${item.ACCURACY}\n`;
+        if (item.EFFECTS) details +=                       `Effects  : ${item.EFFECTS}\n`;
+        if (item.ITEM_IS) details +=                       `Item is  : ${item.ITEM_IS.toUpperCase()}\n`;
+        if (item.CHARGES) details +=                       `Charges  : ${item.CHARGES}\n`;
+        if (item.ITEM_LEVEL) details +=                    `Level    : ${item.ITEM_LEVEL}\n`;
+        if (item.RESTRICTS) details +=                     `Restricts: ${item.RESTRICTS.toUpperCase()}\n`;
+        if (item.IMMUNE) details +=                        `Immune   : ${item.IMMUNE}\n`;
+        if (item.APPLY) details +=                         `Apply    : ${item.APPLY}\n`;
+        if (item.CLASS) details +=                         `Class    : ${item.CLASS}\n`;        
+        if (item.DAMAGE) details +=                        `Damage   : ${item.DAMAGE}\n`;
+        if (item.CONTAINER_SIZE) details +=                `Contains : ${item.CONTAINER_SIZE}\n`;
+        if (item.CAPACITY) details +=                      `Capacity : ${item.CAPACITY}\n`;
+        if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER}\n`;// (${moment(item.CREATE_DATE).format('ddd MMM DD YYYY HH:mm a')})\n`;
+        //if (item.CREATE_DATE) details += `Created: ${new Date(item.CREATE_DATE).toLocaleDateString()}\n`;
         
         return details;
       }).join('\n');
@@ -152,14 +207,14 @@ export async function execute(interaction) {
     const totalPages = Math.ceil(totalCount / limit);
     
     // Create the message content with search term, total count and page info
-    const messageContent = `**Lore Statistics${searchTerm ? ` - Search: '${searchTerm}'` : ''} (${totalCount} total)**\n\`\`\`\n${pageContent.content}\n\`\`\`\nPage ${pageContent.pageInfo.split(' ')[1]} of ${totalPages}`;
+    const messageContent = `${searchTerm ? `${totalCount} items found for '${searchTerm}'.` : ''} \n\`\`\`\n${pageContent.content}\n\`\`\`\nPage ${pageContent.pageInfo.split(' ')[1]} of ${totalPages}`;
     
     const navigationRow = paginationManager.createNavigationRow();
     
     const message = await interaction.editReply({ 
       content: messageContent,
       components: [navigationRow],
-      ephemeral: true 
+      flags: [MessageFlags.Ephemeral]
     });
 
     // Store pagination manager for button interactions
@@ -171,7 +226,7 @@ export async function execute(interaction) {
 
     collector.on('collect', async (i) => {
       if (i.user.id !== interaction.user.id) {
-        await i.reply({ content: 'This pagination is not for you!', ephemeral: true });
+        await i.reply({ content: 'This pagination is not for you!', flags: [MessageFlags.Ephemeral] });
         return;
       }
 
@@ -196,7 +251,7 @@ export async function execute(interaction) {
           components: [newNavigationRow] 
         });
       } else {
-        await i.reply({ content: 'No more pages available!', ephemeral: true });
+        await i.reply({ content: 'No more pages available!', flags: [MessageFlags.Ephemeral] });
       }
     });
 
@@ -208,8 +263,8 @@ export async function execute(interaction) {
     console.error('Stat command error:', error);
     
     await interaction.editReply({ 
-      content: "```Error: Failed to fetch lore statistics. Please try again.```",
-      ephemeral: true 
+      content: "```Error: Failed to fetch lore item(s). Please try again.```",
+      flags: [MessageFlags.Ephemeral]
     });
   }
 }

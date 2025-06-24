@@ -1,6 +1,6 @@
 "use strict";
 
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
 import { CursorPaginationManager } from '../utils/pagination.js';
 
@@ -120,7 +120,7 @@ export async function execute(interaction) {
 
     collector.on('collect', async (i) => {
       if (i.user.id !== interaction.user.id) {
-        await i.reply({ content: 'This pagination is not for you!', ephemeral: true });
+        await i.reply({ content: 'This pagination is not for you!', flags: [MessageFlags.Ephemeral] });
         return;
       }
 
@@ -147,7 +147,7 @@ export async function execute(interaction) {
           components: [newNavigationRow] 
         });
       } else {
-        await i.reply({ content: 'No more pages available!', ephemeral: true });
+        await i.reply({ content: 'No more pages available!', flags: [MessageFlags.Ephemeral] });
       }
     });
 

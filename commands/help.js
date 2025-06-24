@@ -1,6 +1,6 @@
 "use strict";
 
-import { SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 
 export const data = new SlashCommandBuilder()
   .setName('help')
@@ -19,5 +19,5 @@ export async function execute(interaction) {
     "/recent  - shows latest lores and looks\n" +
     "/version - shows version history\n";
 
-  await interaction.reply({ content: "```" + helpMsg + "```", ephemeral: true });
+  await interaction.reply({ content: "```" + helpMsg + "```", flags: [MessageFlags.Ephemeral] });
 } 
