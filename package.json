@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "deploy": "node deploy-commands.js",
+    "clear": "node clear-commands.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

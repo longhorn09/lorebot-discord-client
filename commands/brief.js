@@ -13,7 +13,7 @@ export const data = new SlashCommandBuilder()
       .setRequired(true))
   .addIntegerOption(option =>
     option.setName('limit')
-      .setDescription('Number of items to show per page (default: 10)')
+      .setDescription('Number of items to show per page (default: 20)')
       .setMinValue(1)
       .setMaxValue(25));
 
@@ -21,13 +21,17 @@ export async function execute(interaction) {
   await interaction.deferReply();
 
   const itemSearch = interaction.options.getString('item');
-  const limit = interaction.options.getInteger('limit') || 10;
+  const limit = interaction.options.getInteger('limit') || 20;
 
   try {
-    // GraphQL query for allLoreConnection with cursor pagination (no filtering yet)
+    // GraphQL query for SearchLore with allLorePaginated
     const query = `
-      query GetAllLoreConnection($first: Int!, $after: String) {
-        allLoreConnection(first: $first, after: $after) {
+      query SearchLore($searchToken: String!, $first: Int, $after: String) {
+        allLorePaginated(
+          searchToken: $searchToken,
+          first: $first,
+          after: $after
+        ) {
           edges {
             node {
               LORE_ID
@@ -47,7 +51,9 @@ export async function execute(interaction) {
     `;
 
     const variables = {
+      searchToken: itemSearch,
       first: limit,
+      after: null,
     };
 
     // Debug logging
@@ -55,13 +61,13 @@ export async function execute(interaction) {
       console.log('=== BRIEF COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
       console.log('Variables:', JSON.stringify(variables, null, 2));
-      console.log('Search term (ignored for now):', itemSearch);
+      console.log('Search term:', itemSearch);
       console.log('==========================');
     }
 
     const result = await graphqlClient.query(query, variables);
     
-    if (!result.allLoreConnection || result.allLoreConnection.edges.length === 0) {
+    if (!result.allLorePaginated || result.allLorePaginated.edges.length === 0) {
       return await interaction.editReply({ 
         content: `\`\`\`No lore items found matching '${itemSearch}'.\`\`\``,
         ephemeral: true 
@@ -69,9 +75,9 @@ export async function execute(interaction) {
     }
 
     // Create pagination manager
-    const items = result.allLoreConnection.edges.map(edge => edge.node);
-    const pageInfo = result.allLoreConnection.pageInfo;
-    const totalCount = result.allLoreConnection.totalCount;
+    const items = result.allLorePaginated.edges.map(edge => edge.node);
+    const pageInfo = result.allLorePaginated.pageInfo;
+    const totalCount = result.allLorePaginated.totalCount;
     
     const paginationManager = new CursorPaginationManager(
       items,
@@ -86,10 +92,10 @@ export async function execute(interaction) {
         
         const newResult = await graphqlClient.query(query, newVariables);
         return {
-          items: newResult.allLoreConnection.edges.map(edge => edge.node),
-          cursor: newResult.allLoreConnection.pageInfo.endCursor,
-          hasNextPage: newResult.allLoreConnection.pageInfo.hasNextPage,
-          hasPreviousPage: newResult.allLoreConnection.pageInfo.hasPreviousPage,
+          items: newResult.allLorePaginated.edges.map(edge => edge.node),
+          cursor: newResult.allLorePaginated.pageInfo.endCursor,
+          hasNextPage: newResult.allLorePaginated.pageInfo.hasNextPage,
+          hasPreviousPage: newResult.allLorePaginated.pageInfo.hasPreviousPage,
         };
       }
     );
