@@ -17,7 +17,7 @@ export async function execute(interaction) {
     //"!gtoff   - turn off output to group chat\n" +
     "/query   - flexible query with multiple crieria, example: /query affects=damroll by 2\n" +
     "/recent  - shows latest lores and looks\n" +
-    "/version - shows version history\n";
+    //"/version - shows version history\n";
 
   await interaction.reply({ content: "```" + helpMsg + "```", flags: [MessageFlags.Ephemeral] });
 } 

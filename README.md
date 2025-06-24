@@ -9,20 +9,24 @@ A Node.js Discord bot built with Discord.js v14 and ES modules, featuring GraphQ
 - **Pagination Support**: Built-in pagination with Next/Previous buttons for handling Discord's character limits
 - **Slash Commands**: Modern slash command interface with proper error handling
 - **Cursor-based Pagination**: Support for GraphQL cursor-based pagination
-- **Embedded Responses**: Rich embedded messages with proper formatting
+- **Ephemeral Responses**: All responses are private to the user for cleaner channels
+- **Debug Logging**: Comprehensive debug output when `DEBUG=true`
+- **Moment.js Integration**: Human-readable date formatting for timestamps
 
 ## Commands
 
 - `/help` - Shows available commands and their usage
+- `/brief <item> [limit]` - Shows brief list of lore items matching the search term (default: 20 items)
+- `/stat [search] [limit]` - Shows detailed lore statistics and information (default: 3 items)
+- `/who <character> [limit]` - Shows character information and stats
 - `/query <search> [limit]` - Search for specific data using GraphQL
 - `/recent [limit]` - Show recent entries with pagination
-- `/stat` - Display statistics and metrics
 
 ## Prerequisites
 
 - Node.js 18+ (for ES modules support)
 - Discord Bot Token
-- GraphQL API endpoint
+- GraphQL API endpoint ([source code](https://github.com/longhorn09/lorebot-graphql-api))
 - Discord Guild (Server) ID
 
 ## Installation
@@ -49,16 +53,24 @@ npm install
    # GraphQL API Configuration
    GRAPHQL_ENDPOINT=your_graphql_api_endpoint_here
    GRAPHQL_TOKEN=your_graphql_auth_token_here
+
+   # Debug Configuration
+   DEBUG=true
    ```
    - Rename `.env.template` to `.env`
    - Replace the placeholder values with your actual configuration
 
-4. Deploy slash commands:
+4. Clear existing commands (if needed):
+```bash
+npm run clear
+```
+
+5. Deploy slash commands:
 ```bash
 npm run deploy
 ```
 
-5. Start the bot:
+6. Start the bot:
 ```bash
 npm start
 ```
@@ -81,6 +93,9 @@ GUILD_ID=your_discord_guild_id_here
 # GraphQL API Configuration
 GRAPHQL_ENDPOINT=your_graphql_api_endpoint_here
 GRAPHQL_TOKEN=your_graphql_auth_token_here
+
+# Debug Configuration
+DEBUG=true
 ```
 
 ## Project Structure
@@ -89,9 +104,11 @@ GRAPHQL_TOKEN=your_graphql_auth_token_here
 lorebot-discord-client/
 ├── commands/           # Slash command implementations
 │   ├── help.js        # Help command
+│   ├── brief.js       # Brief lore items command
+│   ├── stat.js        # Detailed statistics command
+│   ├── who.js         # Character information command
 │   ├── query.js       # Search query command
-│   ├── recent.js      # Recent entries command
-│   └── stat.js        # Statistics command
+│   └── recent.js      # Recent entries command
 ├── events/            # Discord event handlers
 │   ├── ready.js       # Bot ready event
 │   └── interactionCreate.js  # Command interaction handler
@@ -100,6 +117,7 @@ lorebot-discord-client/
 │   └── pagination.js  # Pagination utilities
 ├── index.js           # Main bot entry point
 ├── deploy-commands.js # Command deployment script
+├── clear-commands.js  # Command cleanup script
 ├── package.json       # Dependencies and scripts
 ├── .env.template      # Environment variables template (create this)
 └── .env              # Environment variables (rename from .env.template)
@@ -112,8 +130,37 @@ The bot includes a flexible GraphQL client that supports:
 - Authentication via Bearer tokens
 - Error handling and logging
 - Cursor-based pagination
+- Debug logging for development
 
-Example GraphQL queries are included in the command files and can be customized based on your actual GraphQL schema.
+### Example GraphQL Queries
+
+The bot uses standardized GraphQL queries with cursor pagination:
+
+```graphql
+query SearchLore($searchToken: String!, $first: Int, $after: String) {
+  allLorePaginated(
+    searchToken: $searchToken,
+    first: $first,
+    after: $after
+  ) {
+    edges {
+      node {
+        LORE_ID
+        OBJECT_NAME
+        # ... additional fields
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+    totalCount
+  }
+}
+```
 
 ## Pagination
 
@@ -125,7 +172,28 @@ Both support:
 - Next/Previous navigation buttons
 - Automatic button state management
 - User-specific pagination sessions
-- Timeout cleanup
+- Timeout cleanup (5 minutes)
+- Page counting (Page X of Y format)
+
+## Command Details
+
+### `/brief <item> [limit]`
+- **Purpose**: Shows brief list of lore items matching the search term
+- **Default limit**: 20 items per page
+- **Format**: `Object 'item_name'` format
+- **Example**: `/brief ring`, `/brief mithril.rapier limit:10`
+
+### `/stat [search] [limit]`
+- **Purpose**: Shows detailed lore statistics and information
+- **Default limit**: 3 items per page
+- **Features**: Comprehensive item details with formatted affects
+- **Example**: `/stat`, `/stat ring limit:5`
+
+### `/who <character> [limit]`
+- **Purpose**: Shows character information and stats
+- **Default limit**: 10 items per page
+- **Features**: Character stats, levels, equipment, etc.
+- **Example**: `/who Drunoob`, `/who Drunoob limit:5`
 
 ## Development
 
@@ -133,7 +201,8 @@ Both support:
 
 1. Create a new file in the `commands/` directory
 2. Export `data` (SlashCommandBuilder) and `execute` (function)
-3. The command will be automatically loaded on startup
+3. Include `MessageFlags` import for ephemeral responses
+4. The command will be automatically loaded on startup
 
 ### Adding New Events
 
@@ -141,9 +210,26 @@ Both support:
 2. Export `name`, `once` (boolean), and `execute` (function)
 3. The event will be automatically registered on startup
 
+### Debug Mode
+
+Enable debug logging by setting `DEBUG=true` in your `.env` file:
+
+```env
+DEBUG=true
+```
+
+This will output GraphQL queries, variables, and search terms to the console for development.
+
+## Available Scripts
+
+- `npm start` - Start the bot
+- `npm run dev` - Start with auto-restart for development
+- `npm run deploy` - Deploy slash commands to Discord
+- `npm run clear` - Clear all registered commands (clean slate)
+
 ## License
 
-ISC License - see LICENSE file for details.
+MIT License - see LICENSE file for details.
 
 ## Contributing
 
