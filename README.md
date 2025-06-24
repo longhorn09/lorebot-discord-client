@@ -245,4 +245,4 @@ For issues and questions, please use the GitHub issues page.
 
 ## Community
 
-![Discord Shield](https://discord.com/api/guilds/328947215429140490/widget.png?style=shield)
+![Discord Shield](https://discord.com/api/guilds/1066457750705537175/widget.png?style=shield)
