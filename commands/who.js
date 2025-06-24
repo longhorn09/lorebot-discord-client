@@ -18,7 +18,7 @@ export const data = new SlashCommandBuilder()
       .setMaxValue(25));
 
 export async function execute(interaction) {
-  await interaction.deferReply();
+  await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
   const characterName = interaction.options.getString('character');
   const limit = interaction.options.getInteger('limit') || 10;
