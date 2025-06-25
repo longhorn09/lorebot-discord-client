@@ -74,6 +74,18 @@ export async function execute(interaction) {
     const pageInfo = result.allPersonsConnection.pageInfo;
     const totalCount = result.allPersonsConnection.totalCount;
     
+    // Debug logging for cursor validation
+    if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
+      console.log('=== CURSOR VALIDATION DEBUG ===');
+      console.log('End cursor:', pageInfo.endCursor);
+      console.log('Start cursor:', pageInfo.startCursor);
+      console.log('Has next page:', pageInfo.hasNextPage);
+      console.log('Has previous page:', pageInfo.hasPreviousPage);
+      console.log('Cursor type:', typeof pageInfo.endCursor);
+      console.log('Cursor is null/undefined:', pageInfo.endCursor === null || pageInfo.endCursor === undefined);
+      console.log('================================');
+    }
+    
     const paginationManager = new CursorPaginationManager(
       items,
       pageInfo.endCursor,
