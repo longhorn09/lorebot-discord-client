@@ -162,20 +162,15 @@ export async function execute(interaction) {
         // Character information at the bottom
         //const MYSQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss"; 
         if (character.SUBMITTER && character.CREATE_DATE) {
-          //const createDate = moment(character.CREATE_DATE, moment.ISO_8601);
-          //const formattedDate = createDate.format('YYYY-MM-DD');
-          //const timestampInSeconds = character.CREATE_DATE; // Example timestamp in seconds
-          //const timestampInMilliseconds = timestampInSeconds * 1000;
-          //const formattedDate = moment(timestampInMilliseconds).format('YYYY-MM-DD HH:mm:ss');
-
-          details += `\nSubmitter: ${character.SUBMITTER}`;
-          //details += `\nSubmitter: ${character.SUBMITTER} (${formattedDate})`;
+          const createDate = moment(Number(character.CREATE_DATE));
+          const formattedDate = createDate.format('ddd MMM DD YYYY HH:MM');
+          details += `\nSubmitter: ${character.SUBMITTER} (${formattedDate})`;
         } else if (character.SUBMITTER) {
           details += `\nSubmitter: ${character.SUBMITTER}`;
         } else if (character.CREATE_DATE) {
-          //const createDate = moment(character.CREATE_DATE, moment.ISO_8601);
-          //const formattedDate = createDate.format('YYYY-MM-DD');
-          //details += `\nCreated: ${formattedDate}`;
+          const createDate = moment(Number(character.CREATE_DATE));
+          const formattedDate = createDate.format('ddd MMM DD YYYY HH:MM');
+          details += `\nCreated: ${formattedDate}`;
         }
         
         return details;

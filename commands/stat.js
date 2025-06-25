@@ -131,7 +131,7 @@ export async function execute(interaction) {
       console.log('=== STAT COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
       console.log('Variables:', JSON.stringify(variables, null, 2));
-      console.log('Search term:', searchTerm);
+      //console.log('Search term:', searchTerm);  // redundant with variables
       console.log('==========================');
     }
 
@@ -195,7 +195,8 @@ export async function execute(interaction) {
         if (item.DAMAGE) details +=                        `Damage   : ${item.DAMAGE}\n`;
         if (item.CONTAINER_SIZE) details +=                `Contains : ${item.CONTAINER_SIZE}\n`;
         if (item.CAPACITY) details +=                      `Capacity : ${item.CAPACITY}\n`;
-        if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER}\n`;// (${moment(item.CREATE_DATE).format('ddd MMM DD YYYY HH:mm a')})\n`;
+        //if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER}\n`;// (${moment(item.CREATE_DATE).format('ddd MMM DD YYYY HH:mm a')})\n`;
+        if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER} (${moment(Number(item.CREATE_DATE)).format('ddd MMM DD YYYY HH:MM')})\n`;
         //if (item.CREATE_DATE) details += `Created: ${new Date(item.CREATE_DATE).toLocaleDateString()}\n`;
         
         return details;
