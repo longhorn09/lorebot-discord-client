@@ -242,7 +242,3 @@ MIT License - see LICENSE file for details.
 ## Support
 
 For issues and questions, please use the GitHub issues page.
-
-## Community
-
-![Discord Shield](https://discord.com/api/guilds/1066457750705537175/widget.png?style=shield)
