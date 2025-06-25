@@ -3,6 +3,7 @@
 import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
 import { CursorPaginationManager } from '../utils/pagination.js';
+import moment from 'moment';
 
 export const data = new SlashCommandBuilder()
   .setName('whoall')
@@ -10,14 +11,14 @@ export const data = new SlashCommandBuilder()
   .addIntegerOption(option =>
     option.setName('limit')
       .setDescription('Number of items to show per page (default: 39)')
-      .setMinValue(1)
-      .setMaxValue(42));
+      .setMinValue(12)
+      .setMaxValue(38));
 
 export async function execute(interaction) {
   await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
   // default 20 items if not explicitly specified by user in discord option upon slash command invocation
-  const limit = interaction.options.getInteger('limit') || 39;    
+  const limit = interaction.options.getInteger('limit') || 36;    
 
   try {
     // GraphQL query for all characters - only PERSON_ID and CHARNAME fields
@@ -111,25 +112,25 @@ export async function execute(interaction) {
     paginationManager.formatPageContent = (pageItems) => {
       const formattedNames = pageItems.map(character => {
         // Format character name: first letter uppercase, rest lowercase
-        return character.CHARNAME.charAt(0).toUpperCase() + character.CHARNAME.slice(1).toLowerCase();
+        const properName = character.CHARNAME.charAt(0).toUpperCase() + character.CHARNAME.slice(1).toLowerCase();
+        // Add CREATE_DATE in parentheses, wrapped in Number() function and Moment()
+        return `${properName.padEnd(15)} (${moment(Number(character.CREATE_DATE)).format('MMM-YY')})`;
       });
       
-      // Group names into rows of 3 with even spacing
+      // Group names into rows of 2 with even spacing
       const rows = [];
-      for (let i = 0; i < formattedNames.length; i += 3) {
-        const row = formattedNames.slice(i, i + 3);
-        // Pad the row to ensure even spacing (max 3 names per row)
-        while (row.length < 3) {
+      for (let i = 0; i < formattedNames.length; i += 2) {
+        const row = formattedNames.slice(i, i + 2);
+        // Pad the row to ensure even spacing (max 2 names per row)
+        while (row.length < 2) {
           row.push(''); // Add empty string for spacing
         }
         
         // Use padEnd to ensure proper column alignment
         // First column: pad to accommodate longest name in first column
-        // Second column: pad to accommodate longest name in second column
         const paddedRow = [
-          row[0].padEnd(20), // Adjust 20 based on your longest expected name
-          row[1].padEnd(20), // Adjust 20 based on your longest expected name
-          row[2] // Last column doesn't need padding
+          row[0].padEnd(35), // Adjust 35 based on your longest expected name with date
+          row[1] // Last column doesn't need padding
         ];
         
         rows.push(paddedRow.join(''));
