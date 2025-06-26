@@ -43,21 +43,11 @@ npm install
 ```
 
 3. Set up environment variables:
-   - Create a `.env.template` file in the root directory with the following content:
-   ```env
-   # Discord Bot Configuration
-   DISCORD_TOKEN=your_discord_bot_token_here
-   CLIENT_ID=your_discord_client_id_here
-   GUILD_ID=your_discord_guild_id_here
-
-   # GraphQL API Configuration
-   GRAPHQL_ENDPOINT=your_graphql_api_endpoint_here
-   GRAPHQL_TOKEN=your_graphql_auth_token_here
-
-   # Debug Configuration
-   DEBUG=true
+   - Create a `.env` file in the root directory by copying the boilerplate template
+   ```bash
+   cp .env.template .env
+   vim .env
    ```
-   - Rename `.env.template` to `.env`
    - Replace the placeholder values with your actual configuration
 
 4. Clear existing commands (if needed):
@@ -78,24 +68,6 @@ npm start
 For development with auto-restart:
 ```bash
 npm run dev
-```
-
-## Environment Variables
-
-Copy and paste this into your `.env` file:
-
-```env
-# Discord Bot Configuration
-DISCORD_TOKEN=your_discord_bot_token_here
-CLIENT_ID=your_discord_client_id_here
-GUILD_ID=your_discord_guild_id_here
-
-# GraphQL API Configuration
-GRAPHQL_ENDPOINT=your_graphql_api_endpoint_here
-GRAPHQL_TOKEN=your_graphql_auth_token_here
-
-# Debug Configuration
-DEBUG=true
 ```
 
 ## Project Structure
@@ -126,8 +98,7 @@ lorebot-discord-client/
 ├── package.json       # Dependencies and scripts
 ├── .gitignore         # Git ignore patterns
 ├── LICENSE            # MIT License
-├── .env.template      # Environment variables template (create this)
-└── .env              # Environment variables (rename from .env.template)
+└── .env              # Environment variables
 ```
 
 ## GraphQL Integration
