@@ -190,33 +190,14 @@ Both support:
 
 ### Debug Mode
 
-Enable debug logging by setting `DEBUG=true` in your `.env` file:
+For additional logging during development, toggle `DEBUG` flag in `.env`
 
 ```env
 DEBUG=true
 ```
 
-This will output GraphQL queries, variables, and search terms to the console for development.
-
-## Available Scripts
-
-- `npm start` - Start the bot
-- `npm run dev` - Start with auto-restart for development
-- `npm run deploy` - Deploy slash commands to Discord
-- `npm run clear` - Clear all registered commands (clean slate)
-
-## License
-
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## Support
-
-For issues and questions, please use the GitHub issues page.
+## Epilogue
+- For support, please use the [issues page](https://github.com/longhorn09/lorebot-discord-client/issues).
+- License: MIT
+- Contribute: Submit a [pull request](https://github.com/longhorn09/lorebot-discord-client/pulls)
+- Donate: Any donation amount greatly appreciated [gofundme](https://gofund.me/e00951cc)
