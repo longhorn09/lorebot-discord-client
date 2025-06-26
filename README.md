@@ -107,11 +107,16 @@ lorebot-discord-client/
 │   ├── brief.js       # Brief lore items command
 │   ├── stat.js        # Detailed statistics command
 │   ├── who.js         # Character information command
+│   ├── whoall.js      # All characters information command
 │   ├── query.js       # Search query command
 │   └── recent.js      # Recent entries command
 ├── events/            # Discord event handlers
 │   ├── ready.js       # Bot ready event
-│   └── interactionCreate.js  # Command interaction handler
+│   ├── interactionCreate.js  # Command interaction handler
+│   └── messageCreate.js      # Message event handler
+├── handlers/          # Message content handlers
+│   ├── lorePasteHandler.js   # Lore paste content handler
+│   └── lookPasteHandler.js   # Look paste content handler
 ├── utils/             # Utility modules
 │   ├── graphql.js     # GraphQL client
 │   └── pagination.js  # Pagination utilities
@@ -119,6 +124,8 @@ lorebot-discord-client/
 ├── deploy-commands.js # Command deployment script
 ├── clear-commands.js  # Command cleanup script
 ├── package.json       # Dependencies and scripts
+├── .gitignore         # Git ignore patterns
+├── LICENSE            # MIT License
 ├── .env.template      # Environment variables template (create this)
 └── .env              # Environment variables (rename from .env.template)
 ```
