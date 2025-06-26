@@ -485,56 +485,66 @@ function constructLoreUpdateQuery(parsedData) {
     // GRAPHQL QUERY CONSTRUCTION LOGIC
     // ========================================
     
-    // GraphQL mutation aligned with parsedData structure
+    // GraphQL mutation aligned with Lore type and LoreInput
     const query = `
-      mutation UpdateObjectLore($input: UpdateObjectLoreInput!) {
-        updateObjectLore(input: $input) {
-          success
-          message
-          object {
-            id
-            name
-            updatedAt
-            loreCount
-          }
-          errors {
-            field
-            message
-          }
+      mutation CreateOrUpdateLore($input: LoreInput!) {
+        createOrUpdateLore(input: $input) {
+          LORE_ID
+          OBJECT_NAME
+          ITEM_TYPE
+          ITEM_IS
+          SUBMITTER
+          AFFECTS
+          APPLY
+          RESTRICTS
+          CREATE_DATE
+          CLASS
+          MAT_CLASS
+          MATERIAL
+          ITEM_VALUE
+          EXTRA
+          IMMUNE
+          EFFECTS
+          WEIGHT
+          CAPACITY
+          ITEM_LEVEL
+          CONTAINER_SIZE
+          CHARGES
+          SPEED
+          ACCURACY
+          POWER
+          DAMAGE
         }
       }
     `;
     
-    // Construct variables object aligned with parsedData structure
+    // Construct variables object aligned with LoreInput type
     const variables = {
       input: {
-        objectName: parsedData.objectName,
-        timestamp: parsedData.timestamp,
-        loreData: {
-          objName: parsedData.loreData.objName,
-          itemType: parsedData.loreData.itemType,
-          matClass: parsedData.loreData.matClass,
-          material: parsedData.loreData.material,
-          weight: parsedData.loreData.weight,
-          value: parsedData.loreData.value,
-          speed: parsedData.loreData.speed,
-          power: parsedData.loreData.power,
-          accuracy: parsedData.loreData.accuracy,
-          effects: parsedData.loreData.effects,
-          itemIs: parsedData.loreData.itemIs,
-          charges: parsedData.loreData.charges,
-          containerSize: parsedData.loreData.containerSize,
-          capacity: parsedData.loreData.capacity,
-          spell: parsedData.loreData.spell,
-          restricts: parsedData.loreData.restricts,
-          immune: parsedData.loreData.immune,
-          apply: parsedData.loreData.apply,
-          weapClass: parsedData.loreData.weapClass,
-          damage: parsedData.loreData.damage,
-          affects: parsedData.loreData.affects,
-          extra: parsedData.loreData.extra,
-          submitter: parsedData.loreData.submitter
-        }
+        OBJECT_NAME: parsedData.loreData.objName,
+        ITEM_TYPE: parsedData.loreData.itemType,
+        ITEM_IS: parsedData.loreData.itemIs,
+        SUBMITTER: parsedData.loreData.submitter,
+        AFFECTS: parsedData.loreData.affects,
+        APPLY: parsedData.loreData.apply,
+        RESTRICTS: parsedData.loreData.restricts,
+        CREATE_DATE: parsedData.timestamp,
+        CLASS: parsedData.loreData.weapClass,
+        MAT_CLASS: parsedData.loreData.matClass,
+        MATERIAL: parsedData.loreData.material,
+        ITEM_VALUE: parsedData.loreData.value,
+        EXTRA: parsedData.loreData.extra,
+        IMMUNE: parsedData.loreData.immune,
+        EFFECTS: parsedData.loreData.effects,
+        WEIGHT: parsedData.loreData.weight,
+        CAPACITY: parsedData.loreData.capacity,
+        ITEM_LEVEL: parsedData.loreData.spell,
+        CONTAINER_SIZE: parsedData.loreData.containerSize,
+        CHARGES: parsedData.loreData.charges,
+        SPEED: parsedData.loreData.speed,
+        ACCURACY: parsedData.loreData.accuracy,
+        POWER: parsedData.loreData.power,
+        DAMAGE: parsedData.loreData.damage
       }
     };
     
@@ -589,19 +599,14 @@ async function executeLoreUpdate(graphqlQuery) {
       return null;
     }
     
-    // Check for business logic errors
-    if (result.data?.updateObjectLore?.errors && result.data.updateObjectLore.errors.length > 0) {
-      console.error('Business logic errors:', result.data.updateObjectLore.errors);
-      return null;
+    // Check for successful response with Lore data
+    if (result.data?.createOrUpdateLore) {
+      console.log('Lore updated successfully:', result.data.createOrUpdateLore);
+      return result.data.createOrUpdateLore;
     }
     
-    // Check for success
-    if (!result.data?.updateObjectLore?.success) {
-      console.error('Update was not successful:', result.data?.updateObjectLore?.message);
-      return null;
-    }
-    
-    return result.data.updateObjectLore;
+    console.error('No lore data returned from mutation');
+    return null;
     
   } catch (error) {
     console.error('Error executing GraphQL update:', error);
