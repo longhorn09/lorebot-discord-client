@@ -9,31 +9,6 @@ import moment from 'moment';
  * @type {Object}
  */
 /*
-const loreData = {
-    objName: null,
-    itemType: null,
-    matClass: null,
-    material: null,
-    weight: null,
-    value: null,
-    speed: null,
-    power: null,
-    accuracy: null,
-    effects: null,
-    itemIs: null,
-    charges: null,
-    containerSize: null,
-    capacity: null,
-    spell: null,
-    restricts: null,
-    immune: null,
-    apply: null,
-    weapClass: null,
-    damage: null,
-    affects: [], // Use an array for 'affects' to handle multiple entries cleanly.
-    extra: null, // Not yet implemented in the original logic.
-    author: null,
-};*/
 
 /**
  * Handle lore paste operations when Object 'content' pattern is detected
@@ -42,7 +17,10 @@ const loreData = {
  */
 export async function handleLorePaste(message, capturedContent) {
   try {
-    console.log(`Processing lore paste message: ${capturedContent}`);
+    //console.log(`Processing lore paste message: ${capturedContent}`);
+    let isValid = true;
+    let graphqlQuery = null;
+    let result = null;
     
     // ========================================
     // MESSAGE PARSING LOGIC
@@ -55,23 +33,57 @@ export async function handleLorePaste(message, capturedContent) {
     const parsedLoreData = await parseLoreMessage(message.content, capturedContent, message.author.tag);
     
     if (!parsedLoreData) {
-      console.log('Failed to parse lore message data');
+      //console.log('Failed to parse lore message data');
       await message.reply({ 
         content: 'Unable to parse lore message data. Please check the format.',
         flags: [MessageFlags.Ephemeral]
       });
-      return;
+      //return;
+      isValid = false;
     }
     
     //console.log('Parsed lore data:', JSON.stringify(parsedLoreData, null, 2));
     
     // ========================================
-    // GRAPHQL QUERY CONSTRUCTION - UNCOMMENT THIS WHEN READY TO TEST
+    // GRAPHQL QUERY CONSTRUCTION 
     // ========================================
     
-    
-    const graphqlQuery = constructLoreUpdateQuery(parsedLoreData);
-    console.log('graphqlQuery: ', graphqlQuery);
+    if (isValid) {
+      // Check if any lore data fields were successfully parsed
+      if (parsedLoreData.loreData.itemType !== null || 
+          parsedLoreData.loreData.matClass !== null || 
+          parsedLoreData.loreData.material !== null || 
+          parsedLoreData.loreData.weight !== null || 
+          parsedLoreData.loreData.value !== null ||
+          parsedLoreData.loreData.speed !== null || 
+          parsedLoreData.loreData.power !== null || 
+          parsedLoreData.loreData.accuracy !== null || 
+          parsedLoreData.loreData.effects !== null || 
+          parsedLoreData.loreData.itemIs !== null ||
+          parsedLoreData.loreData.charges !== null || 
+          parsedLoreData.loreData.spell !== null || 
+          parsedLoreData.loreData.restricts !== null || 
+          parsedLoreData.loreData.immune !== null || 
+          parsedLoreData.loreData.apply !== null ||
+          parsedLoreData.loreData.weapClass !== null || 
+          parsedLoreData.loreData.damage !== null || 
+          parsedLoreData.loreData.affects !== null || 
+          parsedLoreData.loreData.containerSize !== null || 
+          parsedLoreData.loreData.capacity !== null) {
+        // At least one field was parsed successfully, continue with GraphQL update
+        graphqlQuery = constructLoreUpdateQuery(parsedLoreData);
+        isValid = true; 
+        //console.log('graphqlQuery: ', graphqlQuery);
+      } 
+      else {
+        isValid = false;
+        await message.reply({ 
+          content: 'Unable to parse lore message data. Please check the format.',
+          flags: [MessageFlags.Ephemeral]
+        });
+        
+      }
+    }
     
     if (!graphqlQuery) {
       console.log('Failed to construct GraphQL query');
@@ -79,7 +91,8 @@ export async function handleLorePaste(message, capturedContent) {
         content: 'Unable to construct update query. Please check the parsed data.',
         flags: [MessageFlags.Ephemeral]
       });
-      return;
+      //return;
+      isValid = false;
     }
     
 
@@ -87,21 +100,21 @@ export async function handleLorePaste(message, capturedContent) {
     //console.log('GraphQL Variables:', JSON.stringify(graphqlQuery.variables, null, 2));
     
     // ========================================
-    // GRAPHQL API CALL - UNCOMMENT THIS WHEN READY TO TEST
+    // GRAPHQL API CALL 
     // ========================================
     
-    /*
-    const result = await executeLoreUpdate(graphqlQuery);
+    if (isValid) {
+      result = await executeLoreUpdate(graphqlQuery);
+    }
     
     if (!result) {
-      console.log('GraphQL update failed');
+      console.log('lorePasteHandler.handleLorePaste(): GraphQL update failed');
       await message.reply({ 
         content: 'Failed to update lore data on the backend.',
         flags: [MessageFlags.Ephemeral]
       });
-      return;
+      isValid = false;
     }
-    */
 
     // ========================================
     // SUCCESS RESPONSE
@@ -131,16 +144,18 @@ export async function handleLorePaste(message, capturedContent) {
  */
 async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
   try {
-    console.log("in parseLoreMessage()");
+    //console.log("in parseLoreMessage()");
     //console.log('Parsing lore message:', messageContent);
     //console.log('Captured content:', capturedContent);
     let affects = null, objName = null, tmpStr = null;
     let pLore = messageContent;
     let attribName = null,attribName2 = null,attribValue2 = null,attribValue = null,attribValueX = null;
+    /*
     let itemType = null,matClass = null,material = null,weight = null,value = null,speed = null, power = null
                  ,accuracy = null,effects = null,itemIs  = null,charges = null, containerSize = null, capacity = null;
-    let spell = null; // level
-    let restricts = null,immune = null,apply = null,weapClass = null,damage = null;
+     */
+    //let spell = null; // level
+    //let restricts = null,immune = null,apply = null,weapClass = null,damage = null;
     let extra = null;// ##################### NOT YET CODED OUT ##############################
     let isUpdateSuccess = false;
     let hasBlankLine = false;
@@ -256,79 +271,79 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
         
                   switch(attribName.toLowerCase().trim()){
                     case "item type":
-                      itemType = attribValue;
+                     // itemType = attribValue;
                       parsedData.loreData.itemType = attribValue;
                       break;
                     case "contains":
-                      containerSize = /^(\d+)$/g.test(attribValue)  ? Number.parseInt(attribValue.trim()) : null;
+                      //containerSize = /^(\d+)$/g.test(attribValue)  ? Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.containerSize = /^(\d+)$/g.test(attribValue)  ? Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "capacity":
-                      capacity = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //capacity = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.capacity =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "mat class":
-                      matClass = attribValue;
+                      //matClass = attribValue;
                       parsedData.loreData.matClass = attribValue;
                       break;
                     case "material":
-                      material = attribValue;
+                      //material = attribValue;
                       parsedData.loreData.material = attribValue;
                       break;
                     case "weight":
-                      weight = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue) : null;
+                      //weight = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue) : null;
                       parsedData.loreData.weight =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue) : null;
                       break;
                     case "value":
-                      value  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //value  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.value =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "speed":
-                      speed  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //speed  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.speed =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "power":
-                      power  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //power  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.power =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "accuracy":
-                      accuracy  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //accuracy  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.accuracy =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "effects":
-                      effects = attribValue;
+                      //effects = attribValue;
                       parsedData.loreData.effects = attribValue;
                       break;
                     case "item is":
-                      itemIs = attribValue;
+                      //itemIs = attribValue;
                       parsedData.loreData.itemIs = attribValue;
                       break;
                     case "charges":
-                      charges  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //charges  = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.charges = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "level":
-                      spell = attribValueX;    //varchar(80)
+                      //spell = attribValueX;    //varchar(80)
                       parsedData.loreData.spell = attribValueX;
                       break;
                     case "restricts":
-                      restricts = attribValue;
+                      //restricts = attribValue;
                       parsedData.loreData.restricts = attribValue;
                       break;
                     case "immune":
-                      immune = attribValue;
+                      //immune = attribValue;
                       parsedData.loreData.immune = attribValue;
                       break;
                     case "apply":
-                      apply  = /^(-?\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      //apply  = /^(-?\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       parsedData.loreData.apply =  /^(-?\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
                       break;
                     case "class":      ///// weapon class?
-                      weapClass = attribValue;
+                      //weapClass = attribValue;
                       parsedData.loreData.weapClass = attribValue;
                       break;
                     case "damage":
-                      damage = attribValue;
+                      //damage = attribValue;
                       parsedData.loreData.damage = attribValue;
                       break;
                     case "affects":
@@ -344,82 +359,83 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
                   if (attribName2 !== null && attribValue2 !== null) { //2-parter
                     switch(attribName2.toLowerCase().trim()) {
                       case "item type":
-                        itemType = attribValue2.trim();
+                        //itemType = attribValue2.trim();
                         parsedData.loreData.itemType = attribValue2.trim();
                         break;
                       case "contains":
-                        containerSize  = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //containerSize  = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.containerSize =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "capacity":
-                        capacity  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //capacity  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.capacity = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "mat class":
-                        matClass = attribValue2.trim();
+                        //matClass = attribValue2.trim();
                         parsedData.loreData.matClass =  attribValue2.trim();
                         break;
                       case "material":
-                        material = attribValue2.trim();
+                        //material = attribValue2.trim();
                         parsedData.loreData.material =  attribValue2.trim();
                         break;
                       case "weight":
-                        weight  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //weight  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.weight = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "value":
-                        value  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;    //varchar(10)
+                        //value  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;    //varchar(10)
                         parsedData.loreData.value = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;    //varchar(10)
                         break;
                       case "speed":
-                        speed =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //speed =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.speed = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "power":
-                        power =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //power =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.power = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "accuracy":
-                        accuracy  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //accuracy  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.accuracy =   /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "effects":
-                        effects = attribValue2.trim();
+                        //effects = attribValue2.trim();
                         parsedData.loreData.effects = attribValue2.trim();
                         break;
                       case "item is":
-                        itemIs = attribValue2.trim();
+                        //itemIs = attribValue2.trim();
                         parsedData.loreData.itemIs = attribValue2.trim();
                         break;
                       case "charges":
-                        charges  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //charges  =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.charges = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "level":
-                        spell = attribValue2.trim();
+                        //spell = attribValue2.trim();
                         parsedData.loreData.spell = attribValue2.trim();
                         break;
                       case "restricts":
-                        restricts = attribValue2.trim();
+                        //restricts = attribValue2.trim();
                         parsedData.loreData.restricts = attribValue2.trim();
                         break;
                       case "immune":
-                        immune = attribValue2.trim();
+                        //immune = attribValue2.trim();
                         parsedData.loreData.immune = attribValue2.trim();
                         break;
                       case "apply":
-                        apply  =  /^(-?\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
+                        //apply  =  /^(-?\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         parsedData.loreData.apply = /^(-?\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                         break;
                       case "class":      ///// weapon class?
-                        weapClass = attribValue2.trim();
+                        //weapClass = attribValue2.trim();
                         parsedData.loreData.weapClass = attribValue2.trim();
                         break;
                       case "damage":
-                        damage = attribValue2.trim();
+                        //damage = attribValue2.trim();
                         parsedData.loreData.damage = attribValue2.trim();
                         break;
                       case "affects":
+                        // affects functions like a stringbuilder, keeps getting appended to
                         if (affects === null) {
                             affects = attribValue2.trim() + ",";
                         }
@@ -479,7 +495,7 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
 function constructLoreUpdateQuery(parsedData) {
   try {
     let isValid = false;
-    console.log('Constructing GraphQL query for:', parsedData.objectName);
+    //console.log('Constructing GraphQL query for:', parsedData.objectName);
     
     // ========================================
     // GRAPHQL QUERY CONSTRUCTION LOGIC
@@ -487,8 +503,8 @@ function constructLoreUpdateQuery(parsedData) {
     
     // GraphQL mutation aligned with Lore type and LoreInput
     const query = `
-      mutation CreateOrUpdateLore($input: LoreInput!) {
-        createOrUpdateLore(input: $input) {
+      mutation AddOrUpdateLore($input: LoreInput!) {
+        addOrUpdateLore(input: $input) {
           LORE_ID
           OBJECT_NAME
           ITEM_TYPE
@@ -521,33 +537,33 @@ function constructLoreUpdateQuery(parsedData) {
     // Construct variables object aligned with LoreInput type
     const variables = {
       input: {
-        OBJECT_NAME: parsedData.loreData.objName,
-        ITEM_TYPE: parsedData.loreData.itemType,
-        ITEM_IS: parsedData.loreData.itemIs,
-        SUBMITTER: parsedData.loreData.submitter,
-        AFFECTS: parsedData.loreData.affects,
-        APPLY: parsedData.loreData.apply,
-        RESTRICTS: parsedData.loreData.restricts,
+        OBJECT_NAME: parsedData.loreData.objName ? parsedData.loreData.objName.toString().replace("'","\\'") : null,
+        ITEM_TYPE: parsedData.loreData.itemType ? parsedData.loreData.itemType.toString() : null,
+        ITEM_IS: parsedData.loreData.itemIs ? parsedData.loreData.itemIs.toString() : null,
+        SUBMITTER: parsedData.loreData.submitter ? parsedData.loreData.submitter.toString() : null,
+        AFFECTS: parsedData.loreData.affects ? parsedData.loreData.affects.toString() : null,
+        APPLY: parsedData.loreData.apply ? parsedData.loreData.apply : null,
+        RESTRICTS: parsedData.loreData.restricts ? parsedData.loreData.restricts.toString() : null,
         CREATE_DATE: parsedData.timestamp,
-        CLASS: parsedData.loreData.weapClass,
-        MAT_CLASS: parsedData.loreData.matClass,
-        MATERIAL: parsedData.loreData.material,
-        ITEM_VALUE: parsedData.loreData.value,
-        EXTRA: parsedData.loreData.extra,
-        IMMUNE: parsedData.loreData.immune,
-        EFFECTS: parsedData.loreData.effects,
-        WEIGHT: parsedData.loreData.weight,
-        CAPACITY: parsedData.loreData.capacity,
-        ITEM_LEVEL: parsedData.loreData.spell,
-        CONTAINER_SIZE: parsedData.loreData.containerSize,
-        CHARGES: parsedData.loreData.charges,
-        SPEED: parsedData.loreData.speed,
-        ACCURACY: parsedData.loreData.accuracy,
-        POWER: parsedData.loreData.power,
-        DAMAGE: parsedData.loreData.damage
+        CLASS: parsedData.loreData.weapClass ? parsedData.loreData.weapClass.toString() : null,
+        MAT_CLASS: parsedData.loreData.matClass ? parsedData.loreData.matClass.toString() : null,
+        MATERIAL: parsedData.loreData.material ? parsedData.loreData.material.toString() : null,
+        ITEM_VALUE: parsedData.loreData.value ? parsedData.loreData.value.toString() : null,
+        EXTRA: parsedData.loreData.extra ? parsedData.loreData.extra.toString() : null,
+        IMMUNE: parsedData.loreData.immune ? parsedData.loreData.immune.toString() : null,
+        EFFECTS: parsedData.loreData.effects ? parsedData.loreData.effects.toString() : null,
+        WEIGHT: parsedData.loreData.weight ? parsedData.loreData.weight: null,
+        CAPACITY: parsedData.loreData.capacity ? parsedData.loreData.capacity : null,
+        ITEM_LEVEL: parsedData.loreData.spell ? parsedData.loreData.spell.toString() : null,
+        CONTAINER_SIZE: parsedData.loreData.containerSize ? parsedData.loreData.containerSize : null,
+        CHARGES: parsedData.loreData.charges ? parsedData.loreData.charges : null,
+        SPEED: parsedData.loreData.speed ? parsedData.loreData.speed : null,
+        ACCURACY: parsedData.loreData.accuracy ? parsedData.loreData.accuracy: null,
+        POWER: parsedData.loreData.power ? parsedData.loreData.power : null,
+        DAMAGE: parsedData.loreData.damage ? parsedData.loreData.damage.toString() : null
       }
     };
-    
+
     // ========================================
     // QUERY VALIDATION
     // ========================================
@@ -580,14 +596,15 @@ function constructLoreUpdateQuery(parsedData) {
  */
 async function executeLoreUpdate(graphqlQuery) {
   try {
-    console.log('Executing GraphQL update...');
+    //console.log('Executing GraphQL update...');
+    let isValid = true;
     
     // ========================================
     // YOUR GRAPHQL EXECUTION LOGIC GOES HERE
     // ========================================
     
     // Execute the GraphQL mutation
-    const result = await graphqlClient.mutate(graphqlQuery.query, graphqlQuery.variables);
+    const result = await graphqlClient.mutation(graphqlQuery.query, graphqlQuery.variables);
     
     // ========================================
     // RESULT VALIDATION
@@ -596,18 +613,25 @@ async function executeLoreUpdate(graphqlQuery) {
     // Check for GraphQL errors
     if (result.errors && result.errors.length > 0) {
       console.error('GraphQL errors:', result.errors);
-      return null;
+      //return null;
+      isValid = false;
     }
     
     // Check for successful response with Lore data
-    if (result.data?.createOrUpdateLore) {
-      console.log('Lore updated successfully:', result.data.createOrUpdateLore);
-      return result.data.createOrUpdateLore;
+    if (result.addOrUpdateLore) {
+      //console.log('Lore updated successfully:', result.addOrUpdateLore);
+      isValid = true;
+      return result.addOrUpdateLore;
     }
     
-    console.error('No lore data returned from mutation');
-    return null;
-    
+    //console.error('No lore data returned from mutation');
+    //return null;
+    if (isValid) {
+      return result.addOrUpdateLore;
+    }
+    else {
+      return null;
+    }    
   } catch (error) {
     console.error('Error executing GraphQL update:', error);
     return null;

@@ -2,17 +2,6 @@
 
 A Node.js Discord bot built with Discord.js v14 and ES modules, featuring GraphQL integration for data retrieval and pagination support.
 
-## Features
-
-- **Modern Discord.js v14**: Built with the latest Discord.js library using ES modules
-- **GraphQL Integration**: Seamless integration with GraphQL APIs for data retrieval
-- **Pagination Support**: Built-in pagination with Next/Previous buttons for handling Discord's character limits
-- **Slash Commands**: Modern slash command interface with proper error handling
-- **Cursor-based Pagination**: Support for GraphQL cursor-based pagination
-- **Ephemeral Responses**: All responses are private to the user for cleaner channels
-- **Debug Logging**: Comprehensive debug output when `DEBUG=true`
-- **Moment.js Integration**: Human-readable date formatting for timestamps
-
 ## Commands
 
 - `/help` - Shows available commands and their usage
