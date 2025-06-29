@@ -31,39 +31,82 @@ export async function execute(message) {
     const isGuildMessage = message.channel.type === ChannelType.GuildText;
     //console.log("message.channel.type: ", message.channel.type);
     // Log message type for debugging
+    /*
     if (isDirectMessage) {
       console.log(`[DM RECEIVED] From: ${message.author.globalName || message.author.username} (${message.author.id})`);
     } else if (isGuildMessage) {
       console.log(`[GUILD MESSAGE] Channel: ${message.channel.name}, Guild: ${message.guild.name}`);
     }
+    */
     
     /** 
      * Don't do the regex handling - too restrictive 
      * need to account for lores being pasted in the middle of a message or multiple lores in a single message
      */ 
-    //console.log(message.content.trim().indexOf("Object '") );
     if (message.content.trim().indexOf("Object '") >= 0 ) {
       // message.author.globalName  is the best bet for the name of the user
       // message.author.tag         is the tag of the user
       // message.author.displayName is the display name of the user
       const userName = isDirectMessage ? (message.author.globalName || message.author.username) : message.author.globalName;
-      console.log(`[PATTERN 1 MATCHED] User: ${userName} (${message.author.id})`);
-      console.log(`[PATTERN 1 MATCHED] Captured: "${match1[1]}"`);
-      console.log(`[PATTERN 1 MATCHED] Timestamp: ${message.createdAt.toISOString()}`);
-      console.log(`[PATTERN 1 MATCHED] Message Type: ${isDirectMessage ? 'Direct Message' : 'Guild Message'}`);
+      //console.log(`[PATTERN 1 MATCHED] User: ${userName} (${message.author.id})`);
+      //console.log(`[PATTERN 1 MATCHED] Captured: "${match1[1]}"`);
+      //console.log(`[PATTERN 1 MATCHED] Timestamp: ${message.createdAt.toISOString()}`);
+      //console.log(`[PATTERN 1 MATCHED] Message Type: ${isDirectMessage ? 'Direct Message' : 'Guild Message'}`);
       
       // Call handler for Lore paste
       await handleLorePaste(message, match1[1]);
       
-    } else if (lookLogPattern.test(messageContent)) {
+    } 
+    /**
+     * Look at a person - eq capture
+     */    
+    else if (message.content.trim().indexOf(" is using:") >0 ) 
+    {
       const userName = isDirectMessage ? (message.author.globalName || message.author.username) : message.author.globalName;
-      console.log(`[PATTERN 2 MATCHED] User: ${userName} (${message.author.id})`);
-      console.log(`[PATTERN 2 MATCHED] Captured: "${match2[1]}"`);
-      console.log(`[PATTERN 2 MATCHED] Timestamp: ${message.createdAt.toISOString()}`);
-      console.log(`[PATTERN 2 MATCHED] Message Type: ${isDirectMessage ? 'Direct Message' : 'Guild Message'}`);
+      //console.log(`[PATTERN 2 MATCHED] User: ${userName} (${message.author.id})`);
+      //console.log(`[PATTERN 2 MATCHED] Captured: "${match2[1]}"`);
+      //console.log(`[PATTERN 2 MATCHED] Timestamp: ${message.createdAt.toISOString()}`);
+      //console.log(`[PATTERN 2 MATCHED] Message Type: ${isDirectMessage ? 'Direct Message' : 'Guild Message'}`);
       
-      // Call handler for pattern 2
-      await handleLookLogPattern(message, match2[1]);
+      let lookArr = null
+      let cleanArr = []
+      let charName = null;
+
+      // do not use a ^ or \s* in the regex, it will not match 2nd char - considering multi-line for multiple characters
+      lookArr = message.content.trim().split(/([A-Z][a-z]+) is using:/); 
+
+      /**
+       * This logic supports the paste and parsing of multiple characters in a single message
+       * Split the message into an array of strings - basically each element in the array is an individual character
+       * 
+       * The first element is the character name
+       * The rest of the elements are the look log
+       * 
+       * The real world use case is very very rare, most people only paste one character at a time
+       */ 
+      for (let i = 0; i < lookArr.length; i++) {
+        if  (/^([A-Z][a-z]+)$/.test(lookArr[i].trim())) {
+          charName = lookArr[i].trim();
+        }
+        else if (lookArr[i].trim().indexOf("<") === 0 && charName != null && charName.length > 0)
+        {
+          cleanArr.push(`${charName} is using:\n${lookArr[i].trim()}`);
+          charName = null;
+        }
+        else {
+          charName = null;
+        }
+      }
+      //console.log(`cleanArr.length: ${cleanArr.length}`);
+      for (let i = 0; i < cleanArr.length; i++){
+        //console.log(`cleanArr[${i}]: ${cleanArr[i]}`);
+        await handleLookLogPattern(message.author.username, cleanArr[i]);
+        //ParseEqLook(message.author.username,cleanArr[i]);
+      }
+  
+  
+      cleanArr = null;
+      lookArr = null;      
       
     } else if (deprecatedDelimPattern.test(messageContent)) {
       const userName = isDirectMessage ? (message.author.globalName || message.author.username) : message.author.globalName;

@@ -109,7 +109,7 @@ export async function handleLorePaste(message, capturedContent) {
     
     //console.log('Lore data updated successfully:', parsedLoreData);
     await message.reply({ 
-      content: `Lore data updated successfully for ${parsedLoreData.objectName || 'object'}`,
+      content: `Object '${parsedLoreData.objectName || 'object'}' updated.`,
       flags: [MessageFlags.Ephemeral]
     });
     

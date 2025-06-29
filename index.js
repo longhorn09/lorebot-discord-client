@@ -1,6 +1,6 @@
 "use strict";
 
-import { Client, GatewayIntentBits, Collection } from 'discord.js';
+import { Client, GatewayIntentBits, Collection, Partials } from 'discord.js';
 import { config } from 'dotenv';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -19,7 +19,8 @@ const client = new Client({
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.DirectMessages,
-  ],
+  ],  
+  partials: [Partials.Channel, Partials.Message],
 });
 
 // Collection to store slash commands
