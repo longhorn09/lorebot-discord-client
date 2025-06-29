@@ -31,43 +31,20 @@ A Node.js Discord bot built with Discord.js v14 and ES modules, featuring GraphQ
 
 ## Installation
 
-1. Clone the repository:
 ```bash
+# Clone the repository
 git clone https://github.com/longhorn09/lorebot-discord-client.git
 cd lorebot-discord-client
-```
 
-2. Install dependencies:
-```bash
-npm install
-```
+npm install            # Install dependencies
 
-3. Set up environment variables:
-   - Create a `.env` file in the root directory by copying the boilerplate template
-   ```bash
-   cp .env.template .env
-   vim .env
-   ```
-   - Replace the placeholder values with your actual configuration
-
-4. Clear existing commands (if needed):
-```bash
-npm run clear
-```
-
-5. Deploy slash commands:
-```bash
-npm run deploy
-```
-
-6. Start the bot:
-```bash
-npm start
-```
-
-For development with auto-restart:
-```bash
-npm run dev
+# Set up environment variables (copy template and edit)
+cp .env.template .env
+vim .env               # Replace placeholder values with your actual configuration
+npm run clear          # Clear existing commands (if needed)
+npm run deploy         # Deploy slash commands globally (works in DMs)
+npm start              # Start the bot
+npm run dev            # For development with auto-restart
 ```
 
 ## Project Structure
@@ -85,20 +62,22 @@ lorebot-discord-client/
 ├── events/            # Discord event handlers
 │   ├── ready.js       # Bot ready event
 │   ├── interactionCreate.js  # Command interaction handler
-│   └── messageCreate.js      # Message event handler
+│   └── messageCreate.js      # Message event handler (lore/look paste detection)
 ├── handlers/          # Message content handlers
-│   ├── lorePasteHandler.js   # Lore paste content handler
-│   └── lookPasteHandler.js   # Look paste content handler
+│   ├── lorePasteHandler.js   # Lore parsing handler
+│   └── lookPasteHandler.js   # Equipment parsing handler
 ├── utils/             # Utility modules
-│   ├── graphql.js     # GraphQL client
-│   └── pagination.js  # Pagination utilities
+│   ├── graphql.js     # GraphQL client utility
+│   └── pagination.js  # Pagination utilities (PaginationManager, CursorPaginationManager)
 ├── index.js           # Main bot entry point
-├── deploy-commands.js # Command deployment script
+├── deploy-commands.js # Command deployment script (global commands for DMs)
 ├── clear-commands.js  # Command cleanup script
 ├── package.json       # Dependencies and scripts
+├── package-lock.json  # Dependency lock file
 ├── .gitignore         # Git ignore patterns
 ├── LICENSE            # MIT License
-└── .env              # Environment variables
+├── .env.template      # Environment variables template
+└── .env              # Environment variables (create from template)
 ```
 
 ## GraphQL Integration
