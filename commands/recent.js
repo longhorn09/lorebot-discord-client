@@ -1,169 +1,81 @@
 "use strict";
 
-import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
+import { SlashCommandBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
-import { CursorPaginationManager } from '../utils/pagination.js';
+import moment from 'moment';
 
 export const data = new SlashCommandBuilder()
   .setName('recent')
-  .setDescription('Show recent entries with pagination')
-  .addIntegerOption(option =>
-    option.setName('limit')
-      .setDescription('Number of recent entries to show (default: 10)')
-      .setMinValue(1)
-      .setMaxValue(25));
+  .setDescription('Show recent lore entries');
+
+  const MYSQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss"; // for use with moment().format(MYSQL_DATETIME_FORMAT)
+
+/**
+ * Format the recent entries content for display
+ * @param {Array} items - Array of recent lore entries
+ * @returns {string} Formatted content string
+ */
+function formatRecentContent(items) {
+  // TODO: Flesh out this formatting function
+  // This is a placeholder implementation that can be enhanced later
+  
+  return items.map((item, index) => {
+    const createdDate = moment(Number(item.CREATE_DATE)).format("YYYY-MM-DD");
+    
+    if (item.TBL_SRC === "Lore") {
+      return `${createdDate}: Object '${item.DESCRIPTION}'`;
+    } else {
+      return `${createdDate}: !who ${item.DESCRIPTION}`;
+    }
+  }).join('\n');
+}
 
 export async function execute(interaction) {
   await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
-  const limit = interaction.options.getInteger('limit') || 10;
-
   try {
-    // Example GraphQL query for recent entries - adjust based on your actual schema
+    // GraphQL query for recent entries with user filter
     const query = `
-      query GetRecentEntries($limit: Int!, $cursor: String) {
-        recentEntries(first: $limit, after: $cursor) {
-          edges {
-            node {
-              id
-              title
-              description
-              createdAt
-              updatedAt
-            }
-            cursor
-          }
-          pageInfo {
-            hasNextPage
-            hasPreviousPage
-            startCursor
-            endCursor
-          }
+      query Recent($discordUser: String) {
+        recent(DISCORD_USER: $discordUser) {
+          TBL_SRC
+          DESCRIPTION
+          CREATE_DATE
+          submitter
         }
       }
     `;
 
     const variables = {
-      limit: limit,
+      discordUser: interaction.user.tag
     };
 
     const result = await graphqlClient.query(query, variables);
     
-    if (!result.recentEntries || result.recentEntries.edges.length === 0) {
-      const embed = new EmbedBuilder()
-        .setColor(0xFF6B6B)
-        .setTitle('📝 No Recent Entries')
-        .setDescription('No recent entries found.')
-        .setTimestamp();
-      
-      return await interaction.editReply({ embeds: [embed] });
+    if (!result.recent || result.recent.length === 0) {
+      return await interaction.editReply({ 
+        content: '```No recent entries found.```',
+        flags: [MessageFlags.Ephemeral] 
+      });
     }
 
-    // Create pagination manager
-    const items = result.recentEntries.edges.map(edge => edge.node);
-    const pageInfo = result.recentEntries.pageInfo;
+    // Format content using the dedicated formatting function
+    const formattedContent = formatRecentContent(result.recent);
+    const messageContent = "\n```" + formattedContent + "```";
+    // Create the message content
+    //const messageContent = `**Recent Entries (${result.recent.length} total)**\n\`\`\`\n${formattedContent}\n\`\`\``;
     
-    const paginationManager = new CursorPaginationManager(
-      items,
-      pageInfo.endCursor,
-      pageInfo.hasNextPage,
-      pageInfo.hasPreviousPage,
-      async (cursor, direction) => {
-        const newVariables = {
-          ...variables,
-          cursor: cursor,
-        };
-        
-        const newResult = await graphqlClient.query(query, newVariables);
-        return {
-          items: newResult.recentEntries.edges.map(edge => edge.node),
-          cursor: newResult.recentEntries.pageInfo.endCursor,
-          hasNextPage: newResult.recentEntries.pageInfo.hasNextPage,
-          hasPreviousPage: newResult.recentEntries.pageInfo.hasPreviousPage,
-        };
-      }
-    );
-
-    // Override formatPageContent for better display
-    paginationManager.formatPageContent = (pageItems) => {
-      return pageItems.map((item, index) => {
-        const createdDate = new Date(item.createdAt).toLocaleDateString();
-        const updatedDate = new Date(item.updatedAt).toLocaleDateString();
-        const isUpdated = item.createdAt !== item.updatedAt;
-        
-        return `${index + 1}. **${item.title}**\n${item.description}\n*Created: ${createdDate}${isUpdated ? ` | Updated: ${updatedDate}` : ''}*`;
-      }).join('\n\n');
-    };
-
-    const pageContent = paginationManager.getCurrentPageContent();
-    
-    const embed = new EmbedBuilder()
-      .setColor(0x2196F3)
-      .setTitle('📝 Recent Entries')
-      .setDescription(pageContent.content)
-      .setFooter({ text: pageContent.pageInfo })
-      .setTimestamp();
-
-    const navigationRow = paginationManager.createNavigationRow();
-    
-    const message = await interaction.editReply({ 
-      embeds: [embed], 
-      components: [navigationRow] 
-    });
-
-    // Store pagination manager for button interactions
-    interaction.client.paginationManagers = interaction.client.paginationManagers || new Map();
-    interaction.client.paginationManagers.set(message.id, paginationManager);
-
-    // Set up button collector
-    const collector = message.createMessageComponentCollector({ time: 300000 }); // 5 minutes
-
-    collector.on('collect', async (i) => {
-      if (i.user.id !== interaction.user.id) {
-        await i.reply({ content: 'This pagination is not for you!', flags: [MessageFlags.Ephemeral] });
-        return;
-      }
-
-      const paginationManager = interaction.client.paginationManagers.get(message.id);
-      if (!paginationManager) return;
-
-      let success = false;
-      if (i.customId === 'next') {
-        success = await paginationManager.nextPage();
-      } else if (i.customId === 'previous') {
-        success = await paginationManager.previousPage();
-      }
-
-      if (success) {
-        const newPageContent = paginationManager.getCurrentPageContent();
-        const newEmbed = EmbedBuilder.from(embed)
-          .setDescription(newPageContent.content)
-          .setFooter({ text: newPageContent.pageInfo });
-
-        const newNavigationRow = paginationManager.createNavigationRow();
-        
-        await i.update({ 
-          embeds: [newEmbed], 
-          components: [newNavigationRow] 
-        });
-      } else {
-        await i.reply({ content: 'No more pages available!', flags: [MessageFlags.Ephemeral] });
-      }
-    });
-
-    collector.on('end', () => {
-      interaction.client.paginationManagers.delete(message.id);
+    await interaction.editReply({ 
+      content: messageContent,
+      flags: [MessageFlags.Ephemeral] 
     });
 
   } catch (error) {
     console.error('Recent command error:', error);
     
-    const embed = new EmbedBuilder()
-      .setColor(0xFF6B6B)
-      .setTitle('❌ Error')
-      .setDescription('An error occurred while fetching recent entries. Please try again.')
-      .setTimestamp();
-    
-    await interaction.editReply({ embeds: [embed] });
+    await interaction.editReply({ 
+      content: '```Error: Failed to fetch recent entries. Please try again.```',
+      flags: [MessageFlags.Ephemeral] 
+    });
   }
 } 
