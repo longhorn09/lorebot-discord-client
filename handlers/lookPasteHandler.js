@@ -320,84 +320,70 @@ function constructLookUpdateQuery(parsedData) {
     // YOUR GRAPHQL QUERY CONSTRUCTION LOGIC GOES HERE
     // ========================================
     
-    // GraphQL mutation matching the equipment structure
+    // GraphQL mutation matching the Apollo Server playground example
     const query = `
-      mutation UpdateCharacterEquipment($input: UpdateCharacterEquipmentInput!) {
-        updateCharacterEquipment(input: $input) {
-          success
-          message
-          character {
-            id
-            name
-            charName
-            timestamp
-            equipment {
-              light
-              ring1
-              ring2
-              neck1
-              neck2
-              body
-              onchest
-              head
-              legs
-              feet
-              arms
-              slung
-              hands
-              shield
-              about
-              waist
-              pouch
-              rwrist
-              lwrist
-              primary
-              secondary
-              held
-              both
-              submitter
-            }
-            updatedAt
-          }
-          errors {
-            field
-            message
-          }
+      mutation Mutation($input: PersonInput!) {
+        addOrUpdatePerson(input: $input) {
+          # PERSON_ID
+          CHARNAME
+          LIGHT
+          RING1
+          RING2
+          NECK1
+          NECK2
+          BODY
+          ONCHEST
+          HEAD
+          LEGS
+          FEET
+          ARMS
+          SLUNG
+          HANDS
+          SHIELD
+          ABOUT
+          WAIST
+          POUCH
+          RWRIST
+          LWRIST
+          PRIMARY_WEAP
+          SECONDARY_WEAP
+          HELD
+          BOTH_HANDS
+          SUBMITTER
+          # CREATE_DATE
         }
       }
     `;
     
-    // Construct variables object matching the equipment structure
+    // Construct variables object matching the PersonInput structure
     const variables = {
       input: {
-        characterName: parsedData.charName,
-        timestamp: parsedData.timestamp,
-        equipment: {
-          light: parsedData.equipment.light,
-          ring1: parsedData.equipment.ring1,
-          ring2: parsedData.equipment.ring2,
-          neck1: parsedData.equipment.neck1,
-          neck2: parsedData.equipment.neck2,
-          body: parsedData.equipment.body,
-          onchest: parsedData.equipment.onchest,
-          head: parsedData.equipment.head,
-          legs: parsedData.equipment.legs,
-          feet: parsedData.equipment.feet,
-          arms: parsedData.equipment.arms,
-          slung: parsedData.equipment.slung,
-          hands: parsedData.equipment.hands,
-          shield: parsedData.equipment.shield,
-          about: parsedData.equipment.about,
-          waist: parsedData.equipment.waist,
-          pouch: parsedData.equipment.pouch,
-          rwrist: parsedData.equipment.rwrist,
-          lwrist: parsedData.equipment.lwrist,
-          primary: parsedData.equipment.primary,
-          secondary: parsedData.equipment.secondary,
-          held: parsedData.equipment.held,
-          both: parsedData.equipment.both,
-          submitter: parsedData.equipment.submitter
-        }
+        CHARNAME: parsedData.charName,
+        LIGHT: parsedData.equipment.light,
+        RING1: parsedData.equipment.ring1,
+        RING2: parsedData.equipment.ring2,
+        NECK1: parsedData.equipment.neck1,
+        NECK2: parsedData.equipment.neck2,
+        BODY: parsedData.equipment.body,
+        ONCHEST: parsedData.equipment.onchest,
+        HEAD: parsedData.equipment.head,
+        LEGS: parsedData.equipment.legs,
+        FEET: parsedData.equipment.feet,
+        ARMS: parsedData.equipment.arms,
+        SLUNG: parsedData.equipment.slung,
+        HANDS: parsedData.equipment.hands,
+        SHIELD: parsedData.equipment.shield,
+        ABOUT: parsedData.equipment.about,
+        WAIST: parsedData.equipment.waist,
+        POUCH: parsedData.equipment.pouch,
+        RWRIST: parsedData.equipment.rwrist,
+        LWRIST: parsedData.equipment.lwrist,
+        PRIMARY_WEAP: parsedData.equipment.primary,
+        SECONDARY_WEAP: parsedData.equipment.secondary,
+        HELD: parsedData.equipment.held,
+        BOTH_HANDS: parsedData.equipment.both,
+        SUBMITTER: parsedData.equipment.submitter,
+        //CREATE_DATE: parsedData.timestamp
       }
     };
     
@@ -433,7 +419,7 @@ async function executeLookUpdate(graphqlQuery) {
     // ========================================
     
     // Execute the GraphQL mutation
-    const result = await graphqlClient.mutate(graphqlQuery.query, graphqlQuery.variables);
+    const result = await graphqlClient.mutation(graphqlQuery.query, graphqlQuery.variables);
     
     // ========================================
     // RESULT VALIDATION
@@ -445,19 +431,13 @@ async function executeLookUpdate(graphqlQuery) {
       return null;
     }
     
-    // Check for business logic errors
-    if (result.data?.updateCharacterEquipment?.errors && result.data.updateCharacterEquipment.errors.length > 0) {
-      console.error('Business logic errors:', result.data.updateCharacterEquipment.errors);
+    // Check for successful response
+    if (!result.data?.addOrUpdatePerson) {
+      console.error('No data returned from addOrUpdatePerson');
       return null;
     }
     
-    // Check for success
-    if (!result.data?.updateCharacterEquipment?.success) {
-      console.error('Update was not successful:', result.data?.updateCharacterEquipment?.message);
-      return null;
-    }
-    
-    return result.data.updateCharacterEquipment;
+    return result.data.addOrUpdatePerson;
     
   } catch (error) {
     console.error('Error executing GraphQL update:', error);
