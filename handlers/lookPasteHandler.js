@@ -60,15 +60,14 @@ export async function handleLookLogPattern(pUser, pOne_EqLook) {
     if (parsedLookData === null) {
       isValid = false;
     }
-    
-    //console.log('Parsed look data:', JSON.stringify(parsedLookData, null, 2));
-    
     // ========================================
     // GRAPHQL QUERY CONSTRUCTION
     // ========================================
     
     let graphqlQuery = null;
-    graphqlQuery = constructLookUpdateQuery(parsedLookData);
+    if (isValid) {
+      graphqlQuery = constructLookUpdateQuery(parsedLookData);
+    }
     
     if (graphqlQuery === null) {
       isValid = false;      
@@ -82,20 +81,17 @@ export async function handleLookLogPattern(pUser, pOne_EqLook) {
     // ========================================
     
     let result = null;
-    //const result = await executeLookUpdate(graphqlQuery);
+    if (isValid) {
+      result = await executeLookUpdate(graphqlQuery);
+    }
     
     if (!result) {
       isValid = false;  
       //console.log('GraphQL update failed');
-      // Note: Cannot reply to message here as message object is not available
-      //return;
     }
     // ========================================
-    // SUCCESS RESPONSE
+    // SUCCESS RESPONSE HERE
     // ========================================
-    
-    //console.log('Look data updated successfully:', result);
-    // Note: Cannot reply to message here as message object is not available
     
   } catch (error) {
     console.error('Error in lookPasteHandler.handleLookLogPattern():', error);
@@ -149,13 +145,10 @@ async function parseLookMessage(pSubmitter, messageContent) {
       submitter: null
     };
   
-    // ========================================
-    // YOUR MESSAGE PARSING LOGIC GOES HERE
-    // ========================================
-    lookEqData.equipment.submitter = pSubmitter;
     
+    lookEqData.equipment.submitter = pSubmitter;
     // ========================================
-    // PARSING STEPS (placeholder structure)
+    // PARSING STEPS 
     // ========================================
     
     splitArr = messageContent.split("\n");
@@ -222,9 +215,9 @@ async function parseLookMessage(pSubmitter, messageContent) {
           case "worn about body":
             lookEqData.equipment.about = match[2].trim();
             break;
-            case "worn on chest":
-              lookEqData.equipment.onchest = match[2].trim();
-              break;            
+          case "worn on chest":
+            lookEqData.equipment.onchest = match[2].trim();
+            break;            
           case "worn about waist":
             lookEqData.equipment.waist = match[2].trim();
             break;
@@ -262,11 +255,38 @@ async function parseLookMessage(pSubmitter, messageContent) {
     // VALIDATION
     // ========================================
     
-    // Validate that required fields are present
-    if (lookEqData.charName === null) {
-      isValid = false;
+    // gotta have more than a single line of Object ''
+    // ie. don't check for just charName
+    if (lookEqData.equipment.light !== null ||
+      lookEqData.equipment.ring1 !== null ||
+      lookEqData.equipment.ring2 !== null ||
+      lookEqData.equipment.neck1 !== null ||
+      lookEqData.equipment.neck2 !== null ||
+      lookEqData.equipment.body !== null ||
+      lookEqData.equipment.onchest !== null ||
+      lookEqData.equipment.head !== null ||
+      lookEqData.equipment.legs !== null ||
+      lookEqData.equipment.feet !== null ||
+      lookEqData.equipment.arms !== null ||
+      lookEqData.equipment.slung !== null ||
+      lookEqData.equipment.hands !== null ||
+      lookEqData.equipment.shield !== null ||
+      lookEqData.equipment.about !== null ||
+      lookEqData.equipment.waist !== null ||
+      lookEqData.equipment.pouch !== null ||
+      lookEqData.equipment.rwrist !== null ||
+      lookEqData.equipment.lwrist !== null ||
+      lookEqData.equipment.primary !== null ||
+      lookEqData.equipment.secondary !== null ||
+      lookEqData.equipment.held !== null ||
+      lookEqData.equipment.both !== null ) 
+    {
+      isValid = true;
       //console.log('Missing character name in parsed data');
       //return null;
+    }
+    else {
+      isValid = false;
     }
     
     // Add more validation as needed
