@@ -54,12 +54,14 @@ export async function execute(interaction) {
     };
 
     // Debug logging
+    /*
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== WHOALL COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
       console.log('Variables:', JSON.stringify(variables, null, 2));
       console.log('===========================');
     }
+    */
 
     const result = await graphqlClient.query(query, variables);
     
@@ -76,6 +78,7 @@ export async function execute(interaction) {
     const totalCount = result.allPersonsConnection.totalCount;
     
     // Debug logging for cursor validation
+    /*
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== CURSOR VALIDATION DEBUG ===');
       console.log('End cursor:', pageInfo.endCursor);
@@ -86,6 +89,7 @@ export async function execute(interaction) {
       console.log('Cursor is null/undefined:', pageInfo.endCursor === null || pageInfo.endCursor === undefined);
       console.log('================================');
     }
+      */
     
     const paginationManager = new CursorPaginationManager(
       items,

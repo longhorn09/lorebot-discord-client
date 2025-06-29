@@ -84,12 +84,14 @@ export async function execute(interaction) {
     };
 
     // Debug logging
+    /*
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== WHO COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
       console.log('Variables:', JSON.stringify(variables, null, 2));
       console.log('==========================');
     }
+    */
 
     const result = await graphqlClient.query(query, variables);
     

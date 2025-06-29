@@ -127,6 +127,7 @@ export async function execute(interaction) {
     }
 
     // Debug logging
+    /*
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== STAT COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
@@ -134,6 +135,7 @@ export async function execute(interaction) {
       //console.log('Search term:', searchTerm);  // redundant with variables
       console.log('==========================');
     }
+    */
 
     const result = await graphqlClient.query(query, variables);
     

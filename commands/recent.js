@@ -6,7 +6,11 @@ import moment from 'moment';
 
 export const data = new SlashCommandBuilder()
   .setName('recent')
-  .setDescription('Show recent lore entries');
+  .setDescription('Show recent lore entries')
+  .addStringOption(option =>
+    option.setName('user')
+      .setDescription('Discord user to filter recent entries for (optional)')
+      .setRequired(false));
 
   const MYSQL_DATETIME_FORMAT = "YYYY-MM-DD HH:mm:ss"; // for use with moment().format(MYSQL_DATETIME_FORMAT)
 
@@ -20,7 +24,7 @@ function formatRecentContent(items) {
   // This is a placeholder implementation that can be enhanced later
   
   return items.map((item, index) => {
-    const createdDate = moment(Number(item.CREATE_DATE)).format("YYYY-MM-DD");
+    const createdDate = moment(Number(item.CREATE_DATE)).format(MYSQL_DATETIME_FORMAT);
     
     if (item.TBL_SRC === "Lore") {
       return `${createdDate}: Object '${item.DESCRIPTION}'`;
@@ -34,6 +38,10 @@ export async function execute(interaction) {
   await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
 
   try {
+    // Get the user argument if provided, otherwise use the interaction user's tag
+    const userArg = interaction.options.getString('user');
+    const discordUser = userArg || interaction.user.tag;
+
     // GraphQL query for recent entries with user filter
     const query = `
       query Recent($discordUser: String) {
@@ -47,26 +55,27 @@ export async function execute(interaction) {
     `;
 
     const variables = {
-      discordUser: interaction.user.tag
+      discordUser: discordUser
     };
 
     const result = await graphqlClient.query(query, variables);
     
     if (!result.recent || result.recent.length === 0) {
+      const userMessage = userArg ? ` for user '${userArg}'` : '';
       return await interaction.editReply({ 
-        content: '```No recent entries found.```',
+        content: `\`\`\`No recent entries found.\`\`\``,
         flags: [MessageFlags.Ephemeral] 
       });
     }
 
     // Format content using the dedicated formatting function
-    const formattedContent = formatRecentContent(result.recent);
-    const messageContent = "\n```" + formattedContent + "```";
-    // Create the message content
-    //const messageContent = `**Recent Entries (${result.recent.length} total)**\n\`\`\`\n${formattedContent}\n\`\`\``;
+    const formattedContent = "```" + formatRecentContent(  result.recent ) + "```";
+    //mess
+    //const userMessage = userArg ? ` for user '${userArg}'` : '';
+    //const messageContent = `\`\`\`Recent entries${userMessage}:\n${formattedContent}\`\`\``;
     
     await interaction.editReply({ 
-      content: messageContent,
+      content: formattedContent,
       flags: [MessageFlags.Ephemeral] 
     });
 
