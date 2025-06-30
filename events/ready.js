@@ -35,7 +35,7 @@ export async function execute(client) {
 
     // The put method is used to fully refresh all commands in the guild with the current set
     const data = await rest.put(
-      Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID),
+      Routes.applicationCommands(client.user.id),  // Global commands - works in DMs and all servers
       { body: commands },
     );
 
