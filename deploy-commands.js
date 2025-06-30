@@ -34,11 +34,23 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
     // The put method is used to fully refresh all commands in the guild with the current set
-    const data = await rest.put(
-      //Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
-      Routes.applicationCommands(process.env.CLIENT_ID),  // this will allow slash command to be used in DMs
-      { body: commands },
-    );
+    const data = null;
+    if (process.env.NODE_ENV=="development") {
+      data = await rest.put(
+        Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+        { body: commands },
+      );
+
+    }
+    else {
+      // very important - for procedure use applicationCommands, not applicationGuildCommands
+      data = await rest.put(
+        Routes.applicationCommands(process.env.CLIENT_ID),  // this will allow slash command to be used in DMs
+        { body: commands },
+      );
+      
+    }
+    
 
     console.log(`Successfully reloaded ${data.length} application (/) commands.`);
   } catch (error) {
