@@ -39,7 +39,7 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
     let data; // Declare data variable at the proper scope level
 
     // The put method is used to fully refresh all commands in the guild with the current set
-    console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
+    //console.log(`process.env.NODE_ENV: ${process.env.NODE_ENV}`);
     if (process.env.NODE_ENV.toString().toLowerCase() =="development") {
       data = await rest.put(
         Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
