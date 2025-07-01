@@ -158,7 +158,7 @@ export async function execute(interaction) {
         if (character.SECONDARY_WEAP) details += `<used in secondary hand>   ${character.SECONDARY_WEAP}\n`;
         if (character.HELD) details += `<held in secondary hand>   ${character.HELD}\n`;
         
-        if (character.BOTH_HANDS) details += `<used in both hands>        ${character.BOTH_HANDS}\n`;
+        if (character.BOTH_HANDS) details += `<used in both hands>       ${character.BOTH_HANDS}\n`;
         if (character.SHIELD) details += `<worn as shield>           ${character.SHIELD}\n`;
         if (character.POUCH) details += `<worn in pouch>            ${character.POUCH}\n`;
         if (character.LIGHT) details += `<light source>             ${character.LIGHT}\n`;
