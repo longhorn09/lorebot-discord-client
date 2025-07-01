@@ -102,8 +102,7 @@ export async function execute(interaction) {
         if (affectBy.test(affectsArr[i].toString().trim()) )
         {
           match = affectBy.exec(affectsArr[i].toString().trim());
-          //console.log("matched: " + affectsArr[i]);
-          //console.log(match[1].toUpperCase().padEnd(14) + "by " + match[2]);
+          
           if (match[1].trim() === "casting level" ||
               match[1].trim() === "spell slots" ) //keep these lower case
           {
@@ -120,7 +119,6 @@ export async function execute(interaction) {
           }
         }
         else {
-          //console.log("didn't match: " + affectsArr[i]);       //this is going to be single lines like : regeneration 14%
           sb += "Affects".padEnd(9) + ": " + affectsArr[i].toString().trim() + "\n";
         }
       }
