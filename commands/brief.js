@@ -26,11 +26,12 @@ export async function execute(interaction) {
   try {
     // GraphQL query for SearchLore with allLorePaginated
     const query = `
-      query SearchLore($searchToken: String!, $first: Int, $after: String) {
+      query SearchLore($searchToken: String!, $first: Int, $after: String, $submitter: String!) {
         allLorePaginated(
           searchToken: $searchToken,
           first: $first,
-          after: $after
+          after: $after,
+          submitter: $submitter
         ) {
           edges {
             node {
@@ -54,9 +55,11 @@ export async function execute(interaction) {
       searchToken: itemSearch,
       first: limit,
       after: null,
+      submitter: interaction.user.username, // Empty string to get all items regardless of submitter
     };
 
     // Debug logging
+    /*
     if (process.env.DEBUG === 'true' || process.env.DEBUG === '1') {
       console.log('=== BRIEF COMMAND DEBUG ===');
       console.log('GraphQL Query:', query);
@@ -64,6 +67,7 @@ export async function execute(interaction) {
       console.log('Search term:', itemSearch);
       console.log('==========================');
     }
+    */
 
     const result = await graphqlClient.query(query, variables);
     

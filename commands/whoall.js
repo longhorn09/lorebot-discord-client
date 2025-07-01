@@ -23,10 +23,11 @@ export async function execute(interaction) {
   try {
     // GraphQL query for all characters - only PERSON_ID and CHARNAME fields
     const query = `
-      query GetAllPersons($first: Int, $after: String) {
+      query GetAllPersons($first: Int, $after: String, $submitter: String!) {
         allPersonsConnection(
           first: $first
           after: $after
+          submitter: $submitter
           # orderBy: CREATE_DATE_DESC
         ) {
           edges {
@@ -51,6 +52,7 @@ export async function execute(interaction) {
     const variables = {
       first: limit,
       after: null,
+      submitter: interaction.user.username,
     };
 
     // Debug logging

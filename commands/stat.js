@@ -28,11 +28,12 @@ export async function execute(interaction) {
   try {
     // GraphQL query for SearchLore with detailed fields
     const query = `
-      query SearchLore($searchToken: String!, $first: Int, $after: String) {
+      query SearchLore($searchToken: String!, $first: Int, $after: String, $submitter: String!) {
         allLorePaginated(
           searchToken: $searchToken,
           first: $first,
-          after: $after
+          after: $after,
+          submitter: $submitter
         ) {
           edges {
             node {
@@ -79,6 +80,7 @@ export async function execute(interaction) {
       searchToken: searchTerm,
       first: limit,
       after: null,
+      submitter: interaction.user.username , // Empty string to get all items regardless of submitter
     };
 
     /**
@@ -161,6 +163,7 @@ export async function execute(interaction) {
           searchToken: searchTerm,
           first: limit,
           after: cursor,
+          submitter: "", // Empty string to get all items regardless of submitter
         };
         
         const newResult = await graphqlClient.query(query, newVariables);
@@ -197,9 +200,7 @@ export async function execute(interaction) {
         if (item.DAMAGE) details +=                        `Damage   : ${item.DAMAGE}\n`;
         if (item.CONTAINER_SIZE) details +=                `Contains : ${item.CONTAINER_SIZE}\n`;
         if (item.CAPACITY) details +=                      `Capacity : ${item.CAPACITY}\n`;
-        //if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER}\n`;// (${moment(item.CREATE_DATE).format('ddd MMM DD YYYY HH:mm a')})\n`;
         if (item.SUBMITTER) details +=                     `Submitter: ${item.SUBMITTER} (${moment(Number(item.CREATE_DATE)).format('ddd MMM DD YYYY HH:MM')})\n`;
-        //if (item.CREATE_DATE) details += `Created: ${new Date(item.CREATE_DATE).toLocaleDateString()}\n`;
         
         return details;
       }).join('\n');

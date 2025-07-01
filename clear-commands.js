@@ -8,17 +8,20 @@ config();
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 /**
+ * the latest v14 documentation at time of this commit
  * https://discordjs.guide/slash-commands/deleting-commands.html#deleting-specific-commands
- * https://v13.discordjs.guide/creating-your-bot/deleting-commands.html#deleting-specific-commands
+ * https://discordjs.guide/slash-commands/deleting-commands.html#deleting-all-commands
  */
 (async () => {
   try {
     console.log('🗑️  Clearing all application (/) commands...');
 
     // Clear all global commands
-    const data = null;
+    let data = null;
     
     //if (process.env.NODE_ENV=="development")  {
+
+    // note: using { body: [] } deletes all commands
     data = await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: [] })
     .then(() => console.log('✅ Successfully cleared all guild application (/) commands.'))
     .catch(console.error);

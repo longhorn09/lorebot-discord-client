@@ -27,13 +27,14 @@ export async function execute(interaction) {
   try {
     // GraphQL query for character information
     const query = `
-      query SearchPersonByNameSimple($charname: String, $first: Int, $after: String) {
+      query SearchPersonByNameSimple($charname: String, $first: Int, $after: String, $submitter: String!) {
         allPersonsConnection(
           first: $first
           after: $after
           filter: {
             CHARNAME: $charname
           }
+          submitter: $submitter
         ) {
           edges {
             node {
@@ -81,6 +82,7 @@ export async function execute(interaction) {
       charname: characterName,
       first: limit,
       after: null,
+      submitter: interaction.user.username,
     };
 
     // Debug logging
