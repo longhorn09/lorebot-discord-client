@@ -144,6 +144,7 @@ export async function execute(interaction) {
         if (character.NECK1) details += `<worn around neck>         ${character.NECK1}\n`;
         if (character.NECK2) details += `<worn around neck>         ${character.NECK2}\n`;
         if (character.BODY) details +=  `<worn on body>             ${character.BODY}\n`;
+        //if (character.BODY) details +=  `<worn on chest>            ${character.ONCHEST}\n`;
         if (character.HEAD) details +=  `<worn on head>             ${character.HEAD}\n`;
         if (character.LEGS) details +=  `<worn on legs>             ${character.LEGS}\n`;
         if (character.FEET) details +=  `<worn on feet>             ${character.FEET}\n`;

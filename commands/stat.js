@@ -3,6 +3,7 @@
 import { SlashCommandBuilder, EmbedBuilder, MessageFlags } from 'discord.js';
 import { graphqlClient } from '../utils/graphql.js';
 import { CursorPaginationManager } from '../utils/pagination.js';
+import { formatAffects } from '../utils/formatting.js';
 import moment from 'moment';
 
 export const data = new SlashCommandBuilder()
@@ -83,48 +84,7 @@ export async function execute(interaction) {
       submitter: interaction.user.username , // Empty string to get all items regardless of submitter
     };
 
-    /**
-     * copied directly from original version of lorebot.js 
-     * at https://github.com/longhorn09/lorebot/blob/master/lorebot.js
-     * @param {*} pArg 
-     * @returns 
-     */
-    const formatAffects = (pArg) => {
-      let retvalue = "";
-      let affectsArr = [];
-      let sb = "";
-      //let affectBy = /([A-Za-z_\s]+)\s*by\s*([-+]?\d+)/;
-      let affectBy = /^([A-Za-z_\s]+)\s*by\s*(.+)$/;
-      let match = null;
-    
-      affectsArr = pArg.trim().split(",");
-      for (let i = 0;i<affectsArr.length;i++){
-        if (affectBy.test(affectsArr[i].toString().trim()) )
-        {
-          match = affectBy.exec(affectsArr[i].toString().trim());
-          
-          if (match[1].trim() === "casting level" ||
-              match[1].trim() === "spell slots" ) //keep these lower case
-          {
-              sb += "Affects".padEnd(9) + ": " + match[1].trim().padEnd(14) + "by " + match[2] + "\n";
-          }
-          else if (match[1].trim().toLowerCase().startsWith("skill ")) {  // lore formatting for skills
-              sb += "Affects".padEnd(9) + ": " + match[1].trim().toLowerCase().padEnd(20) + "by " + match[2] + "\n";
-          }
-          else if (match[1].trim().length >= 13) {
-            sb += "Affects".padEnd(9) + ": " + match[1].trim().toLowerCase() + " by  " + match[2] + "\n"; // note: 2 trailing spaces after by
-          }
-          else {
-            sb += "Affects".padEnd(9) + ": " + match[1].trim().toUpperCase().padEnd(14) + "by " + match[2] + "\n";
-          }
-        }
-        else {
-          sb += "Affects".padEnd(9) + ": " + affectsArr[i].toString().trim() + "\n";
-        }
-      }
-      retvalue = sb;
-      return retvalue;
-    }
+
 
     // Debug logging
     /*
