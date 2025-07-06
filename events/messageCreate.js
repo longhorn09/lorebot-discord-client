@@ -13,7 +13,7 @@ export async function execute(message) {
   if (!message.author.bot) {
 
     // regex pattern definitions 
-    const loreCapturePattern = /^\s*Object\s{1}'([^\']+)'\s*$/;
+    const loreCapturePattern = /^\s*Object\s{1}'([A-Za-z'\s]+)'\s*$/;
     const lookLogPattern = /^([A-Z][a-z]+) is using:$/g;
     const deprecatedDelimPattern = /^\!(:roll|stat|query|brief|mark|recent|whoall|who|help).*/;
     
