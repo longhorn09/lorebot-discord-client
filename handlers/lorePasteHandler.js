@@ -30,7 +30,11 @@ export async function handleLorePaste(message, capturedContent) {
     // message.author.globalName  is the best bet for the name of the user
       // message.author.tag         is the tag of the user
       // message.author.displayName is the display name of the user
-    const parsedLoreData = await parseLoreMessage(message.content, capturedContent, message.author.tag);
+
+    let tmp = message.content.trim();
+    tmp = tmp.substring(tmp.indexOf("Object '"));
+    //const parsedLoreData = await parseLoreMessage(message.content, capturedContent, message.author.tag);
+    const parsedLoreData = await parseLoreMessage(tmp, capturedContent, message.author.tag);
     
     if (!parsedLoreData) {
       //console.log('Failed to parse lore message data');

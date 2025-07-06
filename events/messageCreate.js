@@ -20,7 +20,6 @@ export async function execute(message) {
     // this exec will be retired, not really used here
     const messageContent = message.content.trim().split('\n')[0];
     
-    const match1 = loreCapturePattern.exec(messageContent);
     const match2 = lookLogPattern.exec(messageContent);
     // ========================================
     // MESSAGE TYPE HANDLING
@@ -34,16 +33,13 @@ export async function execute(message) {
      * need to account for lores being pasted in the middle of a message or multiple lores in a single message
      */ 
     if (message.content.trim().indexOf("Object '") >= 0 ) {
-      // message.author.globalName  is the best bet for the name of the user
-      // message.author.tag         is the tag of the user
-      // message.author.displayName is the display name of the user
       const userName = isDirectMessage ? (message.author.globalName || message.author.username) : message.author.globalName;
-      //console.log(`[PATTERN 1 MATCHED] User: ${userName} (${message.author.id})`);
-      //console.log(`[PATTERN 1 MATCHED] Captured: "${match1[1]}"`);
-      //console.log(`[PATTERN 1 MATCHED] Timestamp: ${message.createdAt.toISOString()}`);
-      //console.log(`[PATTERN 1 MATCHED] Message Type: ${isDirectMessage ? 'Direct Message' : 'Guild Message'}`);
-      
-      // Call handler for Lore paste
+
+      // this logic is needed to get rid of any leading extraneous text when a user pastes a lore
+      let tmp = message.content.trim();
+      tmp = tmp.substring(tmp.indexOf("Object '"));
+      const match1 = loreCapturePattern.exec(tmp.trim().split('\n')[0]);
+
       await handleLorePaste(message, match1[1]);
       
     } 
