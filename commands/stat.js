@@ -63,6 +63,7 @@ export async function execute(interaction) {
               ACCURACY
               POWER
               DAMAGE
+              CAN_USE
             }
             cursor
           }
@@ -123,7 +124,8 @@ export async function execute(interaction) {
           after: cursor,
           submitter: "", // Empty string to get all items regardless of submitter
         };
-        
+        //console.log('query:', query);
+        //console.log('newVariables:', newVariables);
         const newResult = await graphqlClient.query(query, newVariables);
         return {
           items: newResult.allLorePaginated.edges.map(edge => edge.node),
@@ -152,6 +154,7 @@ export async function execute(interaction) {
         if (item.CHARGES) details +=                       `Charges  : ${item.CHARGES}\n`;
         if (item.ITEM_LEVEL) details +=                    `Level    : ${item.ITEM_LEVEL}\n`;
         if (item.RESTRICTS) details +=                     `Restricts: ${item.RESTRICTS.toUpperCase()}\n`;
+        if (item.CAN_USE) details +=                       `  Can use: ${item.CAN_USE}\n`;
         if (item.IMMUNE) details +=                        `Immune   : ${item.IMMUNE}\n`;
         if (item.APPLY) details +=                         `Apply    : ${item.APPLY}\n`;
         if (item.CLASS) details +=                         `Class    : ${item.CLASS}\n`;        
