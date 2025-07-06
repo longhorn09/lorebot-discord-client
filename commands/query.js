@@ -109,6 +109,18 @@ export async function execute(interaction) {
       try {
         // Build the GraphQL query
         const { query, variables } = buildFlexQuery(criteria, limit, null, interaction.user.username);
+
+
+        console.log(`User ID: ${interaction.user.id}`);
+        console.log(`User Tag: ${interaction.user.tag}`);
+        console.log(`Username: ${interaction.user.username}`);
+        console.log(`Global User Name: ${interaction.user.globalName}`);
+      
+        // Server (Guild) where the command was used
+        if (interaction.guild != null) {
+          console.log(`Guild ID: ${interaction.guild.id}`);
+          console.log(`Guild Name: ${interaction.guild.name}`);
+        }
         
         // Execute the GraphQL query
         //console.log("query:", query);

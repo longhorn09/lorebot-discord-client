@@ -1,6 +1,4 @@
-///############################################################
 ///### For Interaction ########################################
-///############################################################
 
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
@@ -20,9 +18,7 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-///############################################################
 ///### For Message ############################################
-///############################################################
 
 client.on('messageCreate', async message => {
   // Ignore messages from other bots
@@ -42,3 +38,11 @@ client.on('messageCreate', async message => {
     console.log(`Guild Name: ${guild.name}`);
   }
 });
+
+/*
+
+select PERSON_ID,CHARNAME,LIGHT,NECK1,HEAD,FEET,SHIELD,ABOUT,CREATE_DATE, SUBMITTER
+from Person
+where CHARNAME='Lin'
+
+*/
