@@ -168,6 +168,7 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
     let splitArr = [];
     let is2part = false;
     let attribRegex = /^([A-Z][0-9A-Za-z\s]+)\:(.+)$/;   //do not use /g here or matching issues
+    let wearableRegex = /^([A-Z][^\:]+\s+is wearable\s*:\s*[a-z]+)\s*\.?$/;
     let objRegex = /^Object\s'(.+)'$/;  //removed g flag
     let isValid = false;
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions
@@ -209,7 +210,8 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
         damage: null,
         affects: null, // affects is built up as a comma separated string if multiple affects are found
         extra: null, // Not yet implemented in the original logic.
-        submitter: pSubmitter
+        submitter: pSubmitter,
+        wearable: null
       } 
     };
     
@@ -243,189 +245,192 @@ async function parseLoreMessage(messageContent, capturedContent, pSubmitter) {
             attribValueX = null;
             match = null;
             is2part = false;
-
-            if (attribRegex.test(splitArr[i].toString().trim()) === true) {
-                match = attribRegex.exec(splitArr[i].toString().trim());
-                if (match !== null)
+            if (wearableRegex.test(splitArr[i].toString().trim()) === true) {
+              //console.log(`wearableRegex[1]: ${wearableRegex.exec(splitArr[i].toString().trim())[1]}`);
+              parsedData.loreData.wearable = wearableRegex.exec(splitArr[i].toString().trim())[1];
+              //console.log(`loreData.wearable: ${parsedData.loreData.wearable}`);
+            }
+            else if (attribRegex.test(splitArr[i].toString().trim()) === true) {
+              match = attribRegex.exec(splitArr[i].toString().trim());
+              if (match !== null) {
+                attribName = match[1].trim();
+                if (match[2].trim().indexOf(":")>0)
                 {
-                  attribName = match[1].trim();
-                  if (match[2].trim().indexOf(":")>0)
+                  if (/^(.+)\s+([A-Z][a-z\s]+)\:(.+)$/.test(match[2].trim())) //natural    Material:organic
                   {
-                    if (/^(.+)\s+([A-Z][a-z\s]+)\:(.+)$/.test(match[2].trim())) //natural    Material:organic
-                    {
-                      is2part = true;
-                      match = /^(.+)\s+([A-Z][a-z\s]+)\:(.+)$/.exec(match[2].trim()); //Make sure regex.exec() exactly matches regex.test() stmt 4 lines above
-                      attribValue = match[1].trim();
-                      attribName2 = match[2].trim();
-                      attribValue2 = match[3].trim();
+                    is2part = true;
+                    match = /^(.+)\s+([A-Z][a-z\s]+)\:(.+)$/.exec(match[2].trim()); //Make sure regex.exec() exactly matches regex.test() stmt 4 lines above
+                    attribValue = match[1].trim();
+                    attribName2 = match[2].trim();
+                    attribValue2 = match[3].trim();
+                  }
+                  else {
+                    //console.log(`No match on 2nd half: ${match[2].trim()}`);  // this shouldn't happen
+                  }
+                }
+                else {    // 1-parter
+                  attribValue = match[2].trim();
+                }
+      
+                let levelRegex = /^Level\s+(\d+)$/;
+                if (levelRegex.test(attribName.trim())) {
+                  let levelnumber = levelRegex.exec(attribName.trim());
+                  attribName = "level";
+                  attribValueX = levelnumber[1] + " : " + attribValue;
+                }
+      
+                switch(attribName.toLowerCase().trim()){
+                  case "item type":
+                    parsedData.loreData.itemType = attribValue;
+                    break;
+                  case "contains":
+                    parsedData.loreData.containerSize = /^(\d+)$/g.test(attribValue)  ? Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "capacity":
+                    parsedData.loreData.capacity =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "mat class":
+                    parsedData.loreData.matClass = attribValue;
+                    break;
+                  case "material":
+                    parsedData.loreData.material = attribValue;
+                    break;
+                  case "weight":
+                    parsedData.loreData.weight =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue) : null;
+                    break;
+                  case "value":
+                    parsedData.loreData.value =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "speed":
+                    parsedData.loreData.speed =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "power":
+                    parsedData.loreData.power =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "accuracy":
+                    parsedData.loreData.accuracy =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "effects":
+                    parsedData.loreData.effects = attribValue;
+                    break;
+                  case "item is":
+                    parsedData.loreData.itemIs = attribValue;
+                    break;
+                  case "charges":
+                    parsedData.loreData.charges = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "level":
+                    parsedData.loreData.spell = attribValueX;
+                    break;
+                  case "restricts":
+                    parsedData.loreData.restricts = attribValue;
+                    break;
+                  case "can use":   // new field added 7/6/2025
+                    parsedData.loreData.can_use = attribValue;
+                    break;                      
+                  case "immune":
+                    parsedData.loreData.immune = attribValue;
+                    break;
+                  case "apply":
+                    parsedData.loreData.apply =  /^(-?\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                    break;
+                  case "class":      ///// weapon class?
+                    parsedData.loreData.weapClass = attribValue;
+                    break;
+                  case "damage":
+                    parsedData.loreData.damage = attribValue;
+                    break;
+                  case "affects":
+                    if (affects === null) {
+                      affects = attribValue + ",";
                     }
                     else {
-                      //console.log(`No match on 2nd half: ${match[2].trim()}`);  // this shouldn't happen
+                      affects += attribValue + ",";
                     }
-                  }
-                  else {    // 1-parter
-                    attribValue = match[2].trim();
-                  }
-        
-                  let levelRegex = /^Level\s+(\d+)$/;
-                  if (levelRegex.test(attribName.trim())) {
-                    let levelnumber = levelRegex.exec(attribName.trim());
-                    attribName = "level";
-                    attribValueX = levelnumber[1] + " : " + attribValue;
-                  }
-        
-                  switch(attribName.toLowerCase().trim()){
+                    break;
+                } //end of 1-parter
+      
+                if (attribName2 !== null && attribValue2 !== null) { //2-parter
+                  switch(attribName2.toLowerCase().trim()) {
                     case "item type":
-                      parsedData.loreData.itemType = attribValue;
+                      parsedData.loreData.itemType = attribValue2.trim();
                       break;
                     case "contains":
-                      parsedData.loreData.containerSize = /^(\d+)$/g.test(attribValue)  ? Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.containerSize =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "capacity":
-                      parsedData.loreData.capacity =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.capacity = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "mat class":
-                      parsedData.loreData.matClass = attribValue;
+                      parsedData.loreData.matClass =  attribValue2.trim();
                       break;
                     case "material":
-                      parsedData.loreData.material = attribValue;
+                      parsedData.loreData.material =  attribValue2.trim();
                       break;
                     case "weight":
-                      parsedData.loreData.weight =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue) : null;
+                      parsedData.loreData.weight = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "value":
-                      parsedData.loreData.value =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.value = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;    //varchar(10)
                       break;
                     case "speed":
-                      parsedData.loreData.speed =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.speed = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "power":
-                      parsedData.loreData.power =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.power = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "accuracy":
-                      parsedData.loreData.accuracy =  /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.accuracy =   /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "effects":
-                      parsedData.loreData.effects = attribValue;
+                      parsedData.loreData.effects = attribValue2.trim();
                       break;
                     case "item is":
-                      parsedData.loreData.itemIs = attribValue;
+                      parsedData.loreData.itemIs = attribValue2.trim();
                       break;
                     case "charges":
-                      parsedData.loreData.charges = /^(\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.charges = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "level":
-                      parsedData.loreData.spell = attribValueX;
+                      parsedData.loreData.spell = attribValue2.trim();
                       break;
                     case "restricts":
-                      parsedData.loreData.restricts = attribValue;
+                      parsedData.loreData.restricts = attribValue2.trim();
                       break;
                     case "can use":   // new field added 7/6/2025
-                      parsedData.loreData.can_use = attribValue;
-                      break;                      
+                      parsedData.loreData.can_use = attribValue2.trim();
+                      break;                        
                     case "immune":
-                      parsedData.loreData.immune = attribValue;
+                      parsedData.loreData.immune = attribValue2.trim();
                       break;
                     case "apply":
-                      parsedData.loreData.apply =  /^(-?\d+)$/g.test(attribValue) ?  Number.parseInt(attribValue.trim()) : null;
+                      parsedData.loreData.apply = /^(-?\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
                       break;
                     case "class":      ///// weapon class?
-                      parsedData.loreData.weapClass = attribValue;
+                      //weapClass = attribValue2.trim();
+                      parsedData.loreData.weapClass = attribValue2.trim();
                       break;
                     case "damage":
-                      parsedData.loreData.damage = attribValue;
+                      parsedData.loreData.damage = attribValue2.trim();
                       break;
                     case "affects":
+                      // affects functions like a stringbuilder, keeps getting appended to
                       if (affects === null) {
-                        affects = attribValue + ",";
+                          affects = attribValue2.trim() + ",";
                       }
                       else {
-                        affects += attribValue + ",";
+                        affects +=  attribValue2.trim() + ",";
                       }
+      
                       break;
-                  } //end of 1-parter
-        
-                  if (attribName2 !== null && attribValue2 !== null) { //2-parter
-                    switch(attribName2.toLowerCase().trim()) {
-                      case "item type":
-                        parsedData.loreData.itemType = attribValue2.trim();
-                        break;
-                      case "contains":
-                        parsedData.loreData.containerSize =  /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "capacity":
-                        parsedData.loreData.capacity = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "mat class":
-                        parsedData.loreData.matClass =  attribValue2.trim();
-                        break;
-                      case "material":
-                        parsedData.loreData.material =  attribValue2.trim();
-                        break;
-                      case "weight":
-                        parsedData.loreData.weight = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "value":
-                        parsedData.loreData.value = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;    //varchar(10)
-                        break;
-                      case "speed":
-                        parsedData.loreData.speed = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "power":
-                        parsedData.loreData.power = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "accuracy":
-                        parsedData.loreData.accuracy =   /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "effects":
-                        parsedData.loreData.effects = attribValue2.trim();
-                        break;
-                      case "item is":
-                        parsedData.loreData.itemIs = attribValue2.trim();
-                        break;
-                      case "charges":
-                        parsedData.loreData.charges = /^(\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "level":
-                        parsedData.loreData.spell = attribValue2.trim();
-                        break;
-                      case "restricts":
-                        parsedData.loreData.restricts = attribValue2.trim();
-                        break;
-                      case "can use":   // new field added 7/6/2025
-                        parsedData.loreData.can_use = attribValue2.trim();
-                        break;                        
-                      case "immune":
-                        parsedData.loreData.immune = attribValue2.trim();
-                        break;
-                      case "apply":
-                        parsedData.loreData.apply = /^(-?\d+)$/g.test(attribValue2) ?  Number.parseInt(attribValue2.trim()) : null;
-                        break;
-                      case "class":      ///// weapon class?
-                        //weapClass = attribValue2.trim();
-                        parsedData.loreData.weapClass = attribValue2.trim();
-                        break;
-                      case "damage":
-                        parsedData.loreData.damage = attribValue2.trim();
-                        break;
-                      case "affects":
-                        // affects functions like a stringbuilder, keeps getting appended to
-                        if (affects === null) {
-                            affects = attribValue2.trim() + ",";
-                        }
-                        else {
-                          affects +=  attribValue2.trim() + ",";
-                        }
-        
-                        break;
-                    }   //end of 2-parter
-                  //console.log(`[${i}]: ${attribName}: ${attribValue} , ${attribName2}: ${attribValue2}`);
-                  } //2-parter null test
-                } //end if match[1] !== null
-                else{ //usually empty line, but may be Extra to be captured here
-                  console.log(`splitArr[${i}] no match: ${splitArr[i].trim()}`);
-                }
-              }   //end if regex.test on first pattern match            
+                  }   //end of 2-parter
+                //console.log(`[${i}]: ${attribName}: ${attribValue} , ${attribName2}: ${attribValue2}`);
+                } //2-parter null test
+              } //end if match[1] !== null
+              else{ //usually empty line, but may be Extra to be captured here
+                console.log(`splitArr[${i}] no match: ${splitArr[i].trim()}`);
+              }
+            }   //end if regex.test on first pattern match            
         } // end for loop
                       
         // Do not comment the below out, the trimming of trailing comma is necessary and not just for debug purposes
@@ -505,6 +510,7 @@ function constructLoreUpdateQuery(parsedData) {
           POWER
           DAMAGE
           CAN_USE
+          # WEARABLE
         }
       }
     `;
@@ -536,7 +542,8 @@ function constructLoreUpdateQuery(parsedData) {
         ACCURACY: parsedData.loreData.accuracy ? parsedData.loreData.accuracy: null,
         POWER: parsedData.loreData.power ? parsedData.loreData.power : null,
         DAMAGE: parsedData.loreData.damage ? parsedData.loreData.damage.toString() : null,
-        CAN_USE: parsedData.loreData.can_use ? parsedData.loreData.can_use.toString() : null    // new field added 7/6/2025
+        CAN_USE: parsedData.loreData.can_use ? parsedData.loreData.can_use.toString() : null,    // new field added 7/6/2025
+        //WEARABLE: parsedData.loreData.wearable ? parsedData.loreData.wearable.toString() : null
       }
     };
 
