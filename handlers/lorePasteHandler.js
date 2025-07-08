@@ -77,6 +77,7 @@ export async function handleLorePaste(message, capturedContent) {
           parsedLoreData.loreData.capacity !== null) {
         // At least one field was parsed successfully, continue with GraphQL update
         graphqlQuery = constructLoreUpdateQuery(parsedLoreData);
+        //console.log(`graphqlQuery: ${graphqlQuery}`);
         isValid = true; 
         //console.log('graphqlQuery: ', graphqlQuery);
       } 
@@ -100,15 +101,12 @@ export async function handleLorePaste(message, capturedContent) {
       isValid = false;
     }
     
-
-    //console.log('GraphQL Query:', graphqlQuery.query);
-    //console.log('GraphQL Variables:', JSON.stringify(graphqlQuery.variables, null, 2));
-    
     // ========================================
     // GRAPHQL API CALL 
     // ========================================
     
     if (isValid) {
+      //console.log('graphqlQuery:', JSON.stringify(graphqlQuery, null, 2));
       result = await executeLoreUpdate(graphqlQuery);
     }
     
@@ -518,7 +516,8 @@ function constructLoreUpdateQuery(parsedData) {
     // Construct variables object aligned with LoreInput type
     const variables = {
       input: {
-        OBJECT_NAME: parsedData.loreData.objName ? parsedData.loreData.objName.toString().replace("'","\\'") : null,
+        //OBJECT_NAME: parsedData.loreData.objName ? parsedData.loreData.objName.toString().replace("'","\\'") : null,
+        OBJECT_NAME: parsedData.loreData.objName ? parsedData.loreData.objName.toString(): null,
         ITEM_TYPE: parsedData.loreData.itemType ? parsedData.loreData.itemType.toString() : null,
         ITEM_IS: parsedData.loreData.itemIs ? parsedData.loreData.itemIs.toString() : null,
         SUBMITTER: parsedData.loreData.submitter ? parsedData.loreData.submitter.toString() : null,
