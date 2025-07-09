@@ -123,7 +123,8 @@ export async function execute(interaction) {
         }
         
         // Execute the GraphQL query
-        //console.log("query:", query);
+        //console.log("query:", JSON.stringify(query, null, 2));
+        //console.log("variables:", JSON.stringify(variables, null, 2));
         const result = await graphqlClient.query(query, variables);
         
                 // Process and format the response with pagination
