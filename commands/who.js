@@ -151,16 +151,15 @@ export async function execute(interaction) {
         if (character.HANDS) details += `<worn on hands>            ${character.HANDS}\n`;
         if (character.ABOUT) details += `<worn about body>          ${character.ABOUT}\n`;        
         if (character.ARMS) details +=  `<worn on arms>             ${character.ARMS}\n`;
+        if (character.SHIELD) details += `<worn as shield>           ${character.SHIELD}\n`;
         if (character.SLUNG) details += `<slung over shoulder>      ${character.SLUNG}\n`;
         if (character.WAIST) details += `<worn about waist>         ${character.WAIST}\n`;
         if (character.RWRIST) details +=`<worn around right wrist>  ${character.RWRIST}\n`;
         if (character.LWRIST) details +=`<worn around left wrist>   ${character.LWRIST}\n`;
         if (character.PRIMARY_WEAP) details += `<used in primary hand>     ${character.PRIMARY_WEAP}\n`;
         if (character.SECONDARY_WEAP) details += `<used in secondary hand>   ${character.SECONDARY_WEAP}\n`;
-        if (character.HELD) details += `<held in secondary hand>   ${character.HELD}\n`;
-        
+        if (character.HELD) details += `<held in secondary hand>   ${character.HELD}\n`;        
         if (character.BOTH_HANDS) details += `<used in both hands>       ${character.BOTH_HANDS}\n`;
-        if (character.SHIELD) details += `<worn as shield>           ${character.SHIELD}\n`;
         if (character.POUCH) details += `<worn in pouch>            ${character.POUCH}\n`;
         if (character.LIGHT) details += `<light source>             ${character.LIGHT}\n`;
         
