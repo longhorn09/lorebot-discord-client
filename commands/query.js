@@ -55,6 +55,7 @@ function buildFlexQuery(flexCriteria, first = 10, after = null, requestor) {
               ACCURACY
               POWER
               DAMAGE
+              CAN_USE
           }
           cursor
         }
