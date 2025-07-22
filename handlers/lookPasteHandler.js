@@ -290,7 +290,7 @@ async function parseLookMessage(pSubmitter, messageContent) {
     }
     
     // Add more validation as needed
-    console.log(`lookEqData: ${JSON.stringify(lookEqData, null, 2)}`);
+    //console.log(`lookEqData: ${JSON.stringify(lookEqData, null, 2)}`);
 
     if (isValid) {
       retvalue = lookEqData;

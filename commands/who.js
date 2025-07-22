@@ -46,6 +46,7 @@ export async function execute(interaction) {
               NECK1
               NECK2
               BODY
+              ONCHEST
               HEAD
               LEGS
               FEET
@@ -97,6 +98,11 @@ export async function execute(interaction) {
 
     const result = await graphqlClient.query(query, variables);
     
+    // Log the GraphQL response
+    //console.log('=== WHO COMMAND GRAPHQL RESPONSE ===');
+    //console.log('GraphQL Response:', JSON.stringify(result, null, 2));
+    //console.log('=====================================');
+    
     if (!result.allPersonsConnection || result.allPersonsConnection.edges.length === 0) {
       return await interaction.editReply({ 
         content: `\`\`\`No character information found for '${characterName}'.\`\`\``,
@@ -143,24 +149,24 @@ export async function execute(interaction) {
         if (character.RING2) details += `<worn on finger>           ${character.RING2}\n`;
         if (character.NECK1) details += `<worn around neck>         ${character.NECK1}\n`;
         if (character.NECK2) details += `<worn around neck>         ${character.NECK2}\n`;
-        if (character.BODY) details +=  `<worn on body>             ${character.BODY}\n`;
-        //if (character.BODY) details +=  `<worn on chest>            ${character.ONCHEST}\n`;
+        if (character.BODY) details +=      `<worn on body>             ${character.BODY}\n`;
+        if (character.ONCHEST) details +=  `<worn on chest>            ${character.ONCHEST}\n`;
         if (character.HEAD) details +=  `<worn on head>             ${character.HEAD}\n`;
         if (character.LEGS) details +=  `<worn on legs>             ${character.LEGS}\n`;
         if (character.FEET) details +=  `<worn on feet>             ${character.FEET}\n`;
         if (character.HANDS) details += `<worn on hands>            ${character.HANDS}\n`;
-        if (character.ABOUT) details += `<worn about body>          ${character.ABOUT}\n`;        
         if (character.ARMS) details +=  `<worn on arms>             ${character.ARMS}\n`;
         if (character.SHIELD) details += `<worn as shield>           ${character.SHIELD}\n`;
+        if (character.ABOUT) details += `<worn about body>          ${character.ABOUT}\n`;  
         if (character.SLUNG) details += `<slung over shoulder>      ${character.SLUNG}\n`;
         if (character.WAIST) details += `<worn about waist>         ${character.WAIST}\n`;
+        if (character.POUCH) details += `<worn as pouch>            ${character.POUCH}\n`;
         if (character.RWRIST) details +=`<worn around right wrist>  ${character.RWRIST}\n`;
         if (character.LWRIST) details +=`<worn around left wrist>   ${character.LWRIST}\n`;
         if (character.PRIMARY_WEAP) details += `<used in primary hand>     ${character.PRIMARY_WEAP}\n`;
         if (character.SECONDARY_WEAP) details += `<used in secondary hand>   ${character.SECONDARY_WEAP}\n`;
         if (character.HELD) details += `<held in secondary hand>   ${character.HELD}\n`;        
-        if (character.BOTH_HANDS) details += `<used in both hands>       ${character.BOTH_HANDS}\n`;
-        if (character.POUCH) details += `<worn in pouch>            ${character.POUCH}\n`;
+        if (character.BOTH_HANDS) details += `<used in both hands>       ${character.BOTH_HANDS}\n`;        
         if (character.LIGHT) details += `<light source>             ${character.LIGHT}\n`;
         
         // Character information at the bottom
